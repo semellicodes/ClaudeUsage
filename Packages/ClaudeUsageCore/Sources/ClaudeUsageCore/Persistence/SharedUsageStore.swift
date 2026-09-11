@@ -2,8 +2,11 @@ import Foundation
 
 /// Lê/escreve o `UsageSnapshot` compartilhado entre App e Widget via App Group.
 /// Não conhece SwiftUI nem WidgetKit — só Foundation.
-/// `@unchecked Sendable`: `UserDefaults` não é `Sendable` no SDK, mas é
-/// documentada pela Apple como thread-safe.
+///
+/// Invariante documentada que justifica `@unchecked Sendable`: `UserDefaults`
+/// não conforma a `Sendable` no SDK, mas a Apple documenta a classe como
+/// thread-safe (leitura/escrita concorrentes são suportadas). Sem essa
+/// garantia documentada, `@unchecked Sendable` não seria aceitável aqui.
 public struct SharedUsageStore: @unchecked Sendable {
     private static let snapshotKey = "latestUsageSnapshot"
 
@@ -11,6 +14,23 @@ public struct SharedUsageStore: @unchecked Sendable {
 
     /// `appGroupIdentifier` nunca é fixado no tipo: cada chamador decide o grupo,
     /// e os testes usam um identificador isolado sem tocar no grupo real.
+    ///
+    /// Limitação conhecida e verificada empiricamente (não apenas suposta):
+    /// `UserDefaults(suiteName:)` só retorna `nil` para um suite name vazio ou
+    /// degenerado. Um identificador errado, ou a ausência da entitlement
+    /// `com.apple.security.application-groups` correta no processo sandboxed,
+    /// NÃO faz este init falhar — `UserDefaults` continua non-nil e
+    /// leituras/escritas continuam funcionando localmente, só que num domínio
+    /// que o outro processo nunca vê. Confirmei isso com um teste manual
+    /// (dois processos assinados fora do projeto, mesmas entitlements do
+    /// App/Widget reais): escrita não vinga no outro lado sem crash nem erro,
+    /// `loadLatestSnapshot()` simplesmente nunca encontra o dado novo.
+    /// `FileManager.containerURL(forSecurityApplicationGroupIdentifier:)`
+    /// também NÃO serve como verificação prévia — testei e ele retorna uma URL
+    /// não-nil para qualquer identificador, com ou sem a entitlement, sandboxed
+    /// ou não; a API só calcula o caminho teórico, não valida direito de acesso.
+    /// Não existe checagem confiável de um único processo isolado — só um teste
+    /// cruzado real (escrever de um lado, ler do outro) prova a integração.
     public init?(appGroupIdentifier: String) {
         guard let userDefaults = UserDefaults(suiteName: appGroupIdentifier) else {
             return nil
