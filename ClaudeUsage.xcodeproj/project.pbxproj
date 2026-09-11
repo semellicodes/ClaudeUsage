@@ -11,9 +11,9 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		DAA912873053A3BA0039F2CC /* ClaudeUsage */ = {
+		DAA912873053A3BA0039F2CC /* App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ClaudeUsage;
+			path = App;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		DAA9127C3053A3BA0039F2CC = {
 			isa = PBXGroup;
 			children = (
-				DAA912873053A3BA0039F2CC /* ClaudeUsage */,
+				DAA912873053A3BA0039F2CC /* App */,
 				DAA912863053A3BA0039F2CC /* Products */,
 			);
 			sourceTree = "<group>";
@@ -61,7 +61,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				DAA912873053A3BA0039F2CC /* ClaudeUsage */,
+				DAA912873053A3BA0039F2CC /* App */,
 			);
 			name = ClaudeUsage;
 			packageProductDependencies = (
