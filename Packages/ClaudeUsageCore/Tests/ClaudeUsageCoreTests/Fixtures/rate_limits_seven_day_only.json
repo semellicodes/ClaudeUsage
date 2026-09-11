@@ -1,0 +1,9 @@
+{
+  "session_id": "seven-day-only",
+  "rate_limits": {
+    "seven_day": {
+      "used_percentage": 55.0,
+      "resets_at": 1738857600
+    }
+  }
+}

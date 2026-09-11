@@ -1,0 +1,20 @@
+{
+  "session_id": "anomaly-test",
+  "rate_limits": {
+    "five_hour": {
+      "used_percentage": 150,
+      "resets_at": 1700000000
+    },
+    "seven_day": {
+      "used_percentage": -20,
+      "resets_at": 1700100000
+    }
+  },
+  "context_window": {
+    "total_input_tokens": 100,
+    "total_output_tokens": 10,
+    "context_window_size": 200000,
+    "used_percentage": 999,
+    "remaining_percentage": -999
+  }
+}

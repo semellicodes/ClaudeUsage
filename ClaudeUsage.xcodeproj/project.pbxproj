@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		E2257FBAF356F1F10D28B495 /* ClaudeUsageWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = EE12CD9854F5E01A547B7C9F /* ClaudeUsageWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		44C8E0A1190D67B847AFC55D /* ClaudeUsageCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1C3F1AF6D3D22B8CD6DE4B53 /* ClaudeUsageCore */; };
+		093DE927E909E8AD1B032C60 /* ClaudeUsageCore in Frameworks */ = {isa = PBXBuildFile; productRef = 8D260610E77D5243C51E2947 /* ClaudeUsageCore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +72,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				44C8E0A1190D67B847AFC55D /* ClaudeUsageCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,6 +80,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				093DE927E909E8AD1B032C60 /* ClaudeUsageCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -123,6 +127,7 @@
 			);
 			name = ClaudeUsage;
 			packageProductDependencies = (
+				1C3F1AF6D3D22B8CD6DE4B53 /* ClaudeUsageCore */,
 			);
 			productName = ClaudeUsage;
 			productReference = DAA912853053A3BA0039F2CC /* ClaudeUsage.app */;
@@ -145,6 +150,7 @@
 			);
 			name = ClaudeUsageWidgetExtension;
 			packageProductDependencies = (
+				8D260610E77D5243C51E2947 /* ClaudeUsageCore */,
 			);
 			productName = ClaudeUsageWidgetExtension;
 			productReference = EE12CD9854F5E01A547B7C9F /* ClaudeUsageWidgetExtension.appex */;
@@ -177,6 +183,9 @@
 			);
 			mainGroup = DAA9127C3053A3BA0039F2CC;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A2342876AA327434AE09AE30 /* XCLocalSwiftPackageReference "Packages/ClaudeUsageCore" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DAA912863053A3BA0039F2CC /* Products */;
 			projectDirPath = "";
@@ -229,6 +238,24 @@
 			targetProxy = 396BDD6E94FD29E603BB12B8 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		A2342876AA327434AE09AE30 /* XCLocalSwiftPackageReference "Packages/ClaudeUsageCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/ClaudeUsageCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1C3F1AF6D3D22B8CD6DE4B53 /* ClaudeUsageCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ClaudeUsageCore;
+		};
+		8D260610E77D5243C51E2947 /* ClaudeUsageCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ClaudeUsageCore;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCBuildConfiguration section */
 		DAA9128E3053A3BB0039F2CC /* Debug */ = {

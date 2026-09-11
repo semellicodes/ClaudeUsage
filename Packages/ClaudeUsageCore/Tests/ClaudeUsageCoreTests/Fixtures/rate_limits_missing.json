@@ -1,0 +1,15 @@
+{
+  "session_id": "no-rate-limits-yet",
+  "version": "2.1.90",
+  "model": {
+    "display_name": "Opus"
+  },
+  "context_window": {
+    "total_input_tokens": 0,
+    "total_output_tokens": 0,
+    "context_window_size": 200000,
+    "used_percentage": null,
+    "remaining_percentage": null,
+    "current_usage": null
+  }
+}

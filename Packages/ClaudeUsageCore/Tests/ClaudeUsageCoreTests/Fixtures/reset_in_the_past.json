@@ -1,0 +1,9 @@
+{
+  "session_id": "past-reset-test",
+  "rate_limits": {
+    "five_hour": {
+      "used_percentage": 50,
+      "resets_at": 1000000000
+    }
+  }
+}

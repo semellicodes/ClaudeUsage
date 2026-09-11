@@ -1,0 +1,21 @@
+{
+  "session_id": "xyz",
+  "version": "2.5.0",
+  "model": {
+    "display_name": "Sonnet",
+    "future_model_field": true
+  },
+  "totally_new_top_level_field": {
+    "nested": [1, 2, 3]
+  },
+  "rate_limits": {
+    "five_hour": {
+      "used_percentage": 10,
+      "resets_at": 1700000000
+    },
+    "spend_limit": {
+      "used_percentage": 5,
+      "resets_at": 1700000000
+    }
+  }
+}
