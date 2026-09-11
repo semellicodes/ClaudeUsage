@@ -6,3 +6,4 @@ xcuserdata/
 *.xcuserstate
 *.log
 *.tmp
+backups/
