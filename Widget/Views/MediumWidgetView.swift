@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 import ClaudeUsageCore
 
 struct MediumWidgetView: View {
@@ -21,7 +22,7 @@ struct MediumWidgetView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        .padding(4)
+        .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .containerBackground(for: .widget) {
             Color(nsColor: .windowBackgroundColor)
@@ -38,13 +39,13 @@ struct MediumWidgetView: View {
                 .foregroundStyle(.secondary)
 
             if snapshot.fiveHour == nil && snapshot.sevenDay == nil {
-                Text("Limites ainda não disponíveis")
+                Label("Limites ainda não disponíveis", systemImage: "clock.arrow.circlepath")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
 
             if let context = snapshot.context, let used = context.usedPercentage {
-                Text("Contexto: \(Int(used))% usado")
+                Label("Contexto: \(Int(used))% usado", systemImage: "doc.text")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
@@ -89,12 +90,13 @@ private struct RateLimitColumn: View {
                     EmptyView()
                 } currentValueLabel: {
                     Text("\(Int(rateLimit.usedPercentage))%")
-                        .font(.callout.bold())
+                        .font(.system(.callout, design: .rounded).weight(.semibold))
                 }
                 .gaugeStyle(.accessoryCircularCapacity)
                 .tint(usageColor(for: rateLimit.usedPercentage))
+                .widgetAccentable()
             } else {
-                Image(systemName: "arrow.clockwise")
+                Image(systemName: "clock.arrow.circlepath")
                     .foregroundStyle(.secondary)
             }
             Text(title)

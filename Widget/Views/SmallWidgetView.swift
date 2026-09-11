@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 import ClaudeUsageCore
 
 struct SmallWidgetView: View {
@@ -18,9 +19,10 @@ struct SmallWidgetView: View {
                 } else if let sevenDay = snapshot.sevenDay, sevenDay.resetsAt > entry.date {
                     usageGauge(percentage: sevenDay.usedPercentage, caption: "7 dias")
                 } else {
-                    Text("Limites ainda não disponíveis")
+                    Label("Limites ainda não disponíveis", systemImage: "clock.arrow.circlepath")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             } else {
                 Text("Abra o Claude Code e envie uma mensagem")
@@ -29,6 +31,7 @@ struct SmallWidgetView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .containerBackground(for: .widget) {
             Color(nsColor: .windowBackgroundColor)
@@ -43,10 +46,11 @@ struct SmallWidgetView: View {
             EmptyView()
         } currentValueLabel: {
             Text("\(Int(percentage))%")
-                .font(.title2.bold())
+                .font(.system(.title2, design: .rounded).weight(.semibold))
         }
         .gaugeStyle(.accessoryCircularCapacity)
         .tint(usageColor(for: percentage))
+        .widgetAccentable()
 
         Text(caption)
             .font(.caption2)
