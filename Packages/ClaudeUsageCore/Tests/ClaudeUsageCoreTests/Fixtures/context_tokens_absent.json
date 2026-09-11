@@ -1,0 +1,8 @@
+{
+  "session_id": "context-tokens-absent",
+  "context_window": {
+    "context_window_size": 200000,
+    "used_percentage": 5,
+    "remaining_percentage": 95
+  }
+}

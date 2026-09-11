@@ -1,14 +1,23 @@
 import Foundation
 
 /// Única fronteira entre o payload bruto do statusLine e o Domain.
-/// `map(jsonData:capturedAt:)` é a única API pública: se o JSON não decodificar,
-/// retorna `nil` e cabe ao chamador preservar o último snapshot válido.
 public enum ClaudeStatusMapper {
-    public static func map(jsonData: Data, capturedAt: Date) -> UsageSnapshot? {
-        guard let payload = try? JSONDecoder().decode(ClaudeStatusPayload.self, from: jsonData) else {
-            return nil
+    /// Falha ao decodificar o JSON do statusLine.
+    /// `reason` é a descrição técnica do `DecodingError` (tipos/chaves esperados),
+    /// nunca o conteúdo do payload — seguro para log via `OSLog.Logger`.
+    public enum MappingError: Error, Equatable, Sendable {
+        case invalidJSON(reason: String)
+    }
+
+    /// `nil` nunca aparece aqui: falha vira `.failure`, com o motivo técnico,
+    /// para quem chama decidir manter o último snapshot válido e logar com segurança.
+    public static func map(jsonData: Data, capturedAt: Date) -> Result<UsageSnapshot, MappingError> {
+        do {
+            let payload = try JSONDecoder().decode(ClaudeStatusPayload.self, from: jsonData)
+            return .success(map(payload: payload, capturedAt: capturedAt))
+        } catch {
+            return .failure(.invalidJSON(reason: String(describing: error)))
         }
-        return map(payload: payload, capturedAt: capturedAt)
     }
 
     static func map(payload: ClaudeStatusPayload, capturedAt: Date) -> UsageSnapshot {
@@ -39,20 +48,29 @@ public enum ClaudeStatusMapper {
         )
     }
 
+    /// Só retorna `nil` quando `context_window` está totalmente ausente do payload.
+    /// Cada campo dentro do bloco é validado independentemente: `used_percentage`
+    /// (o percentual oficial) sobrevive mesmo sem `context_window_size`, e um
+    /// campo ausente/ inválido vira `nil` nesse campo, nunca um valor inventado.
     private static func mapContext(_ window: ClaudeStatusPayload.ContextWindow?) -> ContextUsage? {
-        guard let window,
-              let windowSize = window.contextWindowSize,
-              windowSize > 0
-        else {
-            return nil
-        }
+        guard let window else { return nil }
         return ContextUsage(
-            inputTokens: window.totalInputTokens ?? 0,
-            outputTokens: window.totalOutputTokens ?? 0,
-            windowSize: windowSize,
+            inputTokens: validTokenCount(window.totalInputTokens),
+            outputTokens: validTokenCount(window.totalOutputTokens),
+            windowSize: validWindowSize(window.contextWindowSize),
             usedPercentage: normalizedPercentage(window.usedPercentage),
             remainingPercentage: normalizedPercentage(window.remainingPercentage)
         )
+    }
+
+    private static func validTokenCount(_ value: Int?) -> Int? {
+        guard let value, value >= 0 else { return nil }
+        return value
+    }
+
+    private static func validWindowSize(_ value: Int?) -> Int? {
+        guard let value, value > 0 else { return nil }
+        return value
     }
 
     private static func normalizedPercentage(_ value: Double?) -> Double? {
