@@ -1,10 +1,14 @@
 import Foundation
 import Observation
+import WidgetKit
 import ClaudeUsageCore
 
 @Observable
 @MainActor
 final class MenuBarViewModel {
+    // Precisa bater com `kind` em Widget/ClaudeUsageWidget.swift.
+    private static let widgetKind = "ClaudeUsageWidget"
+
     private(set) var snapshot: UsageSnapshot?
 
     private let store: SharedUsageStore?
@@ -26,6 +30,8 @@ final class MenuBarViewModel {
 
     private func handle(_ newSnapshot: UsageSnapshot) {
         snapshot = newSnapshot
-        try? store?.save(newSnapshot)
+        guard let store else { return }
+        try? store.save(newSnapshot)
+        WidgetCenter.shared.reloadTimelines(ofKind: Self.widgetKind)
     }
 }
