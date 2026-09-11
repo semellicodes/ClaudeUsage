@@ -75,14 +75,14 @@ Após persistir snapshot válido, chamar `WidgetCenter.shared.reloadTimelines(of
 
 ## Domain
 `RateLimit`: `usedPercentage: Double`, `resetsAt: Date`, `remainingPercentage` derivado e limitado a `0...100`.
-`ContextUsage`: `inputTokens`, `outputTokens`, `windowSize`, `usedPercentage?`, `remainingPercentage?`.
+`ContextUsage`: `inputTokens?`, `outputTokens?`, `windowSize?`, `usedPercentage?`, `remainingPercentage?` — todos opcionais porque ausência precisa continuar sendo ausência, nunca virar zero.
 `UsageSnapshot`: `schemaVersion`, `capturedAt`, `claudeCodeVersion?`, `sessionID?`, `modelDisplayName?`, `fiveHour?`, `sevenDay?`, `context?`.
 
 O percentual oficial de contexto usa tokens de entrada/contexto. Não calcular `(input + output) / windowSize` para substituí-lo. Preferir `context_window.used_percentage`.
 
 ## DTO e Mapper
 DTO deve espelhar apenas campos necessários do JSON externo, usando `Codable` e CodingKeys snake_case. Campos condicionais precisam ser opcionais.
-Mapper é a única fronteira DTO -> Domain: converte epoch para `Date`, valida números finitos, normaliza percentuais defensivamente e não deixa payload inválido contaminar o snapshot anterior.
+Mapper é a única fronteira DTO -> Domain: converte epoch para `Date`, valida números finitos, normaliza percentuais defensivamente e não deixa payload inválido contaminar o snapshot anterior. Sua API pública retorna `Result<UsageSnapshot, MappingError>`, não opcional — falha carrega o motivo técnico (nunca o conteúdo do payload) para quem chama decidir manter o snapshot anterior e logar com segurança.
 
 ## Persistência e privacidade
 O payload bruto pode conter `cwd`, `transcript_path` e outros dados privados. Compartilhar com Widget APENAS `UsageSnapshot`; nunca payload bruto, paths completos ou transcript.
