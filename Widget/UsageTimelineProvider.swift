@@ -4,47 +4,53 @@ import ClaudeUsageCore
 struct UsageEntry: TimelineEntry {
     let date: Date
     let snapshot: UsageSnapshot?
+    var model: WidgetModelSelection = .automatic
+    var window: WidgetWindowSelection = .fiveHour
+
+    var missingDataMessage: String {
+        if let name = model.name {
+            return "Use \(name) no Claude Code pelo terminal e envie uma mensagem para carregar os dados"
+        }
+        return "Abra o Claude Code no terminal e envie uma mensagem para carregar o uso"
+    }
+
+    var selectedRateLimit: RateLimit? {
+        window == .fiveHour ? snapshot?.fiveHour : snapshot?.sevenDay
+    }
 }
 
-/// Lê SOMENTE o SharedUsageStore — nunca o payload bruto do statusLine, que o
-/// Widget não tem (nem deveria ter) acesso. A reprodução de dados novos é
-/// disparada pelo App via WidgetCenter.reloadTimelines após persistir um
-/// snapshot; esta policy não faz polling.
-struct UsageTimelineProvider: TimelineProvider {
+/// Lê apenas snapshots sanitizados do App Group.
+struct UsageTimelineProvider: AppIntentTimelineProvider {
     private static let appGroupIdentifier = "3U9MRVV4FR.claudeusage"
 
     func placeholder(in context: Context) -> UsageEntry {
         UsageEntry(date: Date(), snapshot: nil)
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (UsageEntry) -> Void) {
-        completion(currentEntry())
+    func snapshot(for configuration: WidgetSelectionIntent, in context: Context) async -> UsageEntry {
+        entry(for: configuration, date: Date())
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<UsageEntry>) -> Void) {
-        let now = Date()
-        let snapshot = loadSnapshot()
-
-        // Entradas adicionais nos horários de reset: a partir delas, as Views
-        // (que comparam entry.date com resetsAt) passam a tratar aquela janela
-        // como vencida, sem precisar de uma nova busca no store para isso.
-        var dates: Set<Date> = [now]
-        if let resetsAt = snapshot?.fiveHour?.resetsAt, resetsAt > now {
-            dates.insert(resetsAt)
+    func timeline(for configuration: WidgetSelectionIntent, in context: Context) async -> Timeline<UsageEntry> {
+        let current = entry(for: configuration, date: Date())
+        var dates: Set<Date> = [current.date]
+        for window in [current.snapshot?.fiveHour, current.snapshot?.sevenDay] {
+            if let reset = window?.resetsAt, reset > current.date { dates.insert(reset) }
         }
-        if let resetsAt = snapshot?.sevenDay?.resetsAt, resetsAt > now {
-            dates.insert(resetsAt)
+        let entries = dates.sorted().map {
+            UsageEntry(date: $0, snapshot: current.snapshot, model: configuration.model, window: configuration.window)
         }
-
-        let entries = dates.sorted().map { UsageEntry(date: $0, snapshot: snapshot) }
-        completion(Timeline(entries: entries, policy: .never))
+        return Timeline(entries: entries, policy: .never)
     }
 
-    private func currentEntry() -> UsageEntry {
-        UsageEntry(date: Date(), snapshot: loadSnapshot())
-    }
-
-    private func loadSnapshot() -> UsageSnapshot? {
-        SharedUsageStore(appGroupIdentifier: Self.appGroupIdentifier)?.loadLatestSnapshot()
+    private func entry(for configuration: WidgetSelectionIntent, date: Date) -> UsageEntry {
+        let store = SharedUsageStore(appGroupIdentifier: Self.appGroupIdentifier)
+        let snapshot: UsageSnapshot?
+        if let model = configuration.model.usageModel {
+            snapshot = store?.loadLatestSnapshot(for: model)
+        } else {
+            snapshot = store?.loadLatestSnapshot()
+        }
+        return UsageEntry(date: date, snapshot: snapshot, model: configuration.model, window: configuration.window)
     }
 }

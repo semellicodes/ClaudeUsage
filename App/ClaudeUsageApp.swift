@@ -16,7 +16,7 @@ struct ClaudeUsageApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuBarView(snapshot: viewModel.snapshot)
+            MenuBarView(snapshot: viewModel.snapshot, storageError: viewModel.storageError)
         } label: {
             MenuBarLabel(snapshot: viewModel.snapshot)
         }

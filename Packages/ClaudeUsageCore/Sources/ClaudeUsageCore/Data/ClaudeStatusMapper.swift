@@ -3,8 +3,8 @@ import Foundation
 /// Única fronteira entre o payload bruto do statusLine e o Domain.
 public enum ClaudeStatusMapper {
     /// Falha ao decodificar o JSON do statusLine.
-    /// `reason` é a descrição técnica do `DecodingError` (tipos/chaves esperados),
-    /// nunca o conteúdo do payload — seguro para log via `OSLog.Logger`.
+    /// `reason` contém apenas uma categoria fixa; descrições do decoder podem
+    /// incluir conteúdo externo e nunca são propagadas para o log.
     public enum MappingError: Error, Equatable, Sendable {
         case invalidJSON(reason: String)
     }
@@ -15,8 +15,14 @@ public enum ClaudeStatusMapper {
         do {
             let payload = try JSONDecoder().decode(ClaudeStatusPayload.self, from: jsonData)
             return .success(map(payload: payload, capturedAt: capturedAt))
+        } catch DecodingError.typeMismatch {
+            return .failure(.invalidJSON(reason: "Tipo de campo incompatível"))
+        } catch DecodingError.valueNotFound {
+            return .failure(.invalidJSON(reason: "Valor obrigatório ausente"))
+        } catch DecodingError.keyNotFound {
+            return .failure(.invalidJSON(reason: "Campo obrigatório ausente"))
         } catch {
-            return .failure(.invalidJSON(reason: String(describing: error)))
+            return .failure(.invalidJSON(reason: "JSON inválido ou número não representável"))
         }
     }
 

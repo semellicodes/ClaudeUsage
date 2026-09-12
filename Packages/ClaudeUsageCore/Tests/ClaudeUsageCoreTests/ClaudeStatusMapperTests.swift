@@ -6,6 +6,12 @@ private let referenceCapturedAt = Date(timeIntervalSince1970: 1_738_400_000)
 
 @Suite("ClaudeStatusMapper")
 struct ClaudeStatusMapperTests {
+    @Test("diagnóstico do decoder não expõe conteúdo externo")
+    func safeDecoderDiagnostics() {
+        let data = Data(#"{"rate_limits":{"five_hour":{"used_percentage":"private-value"}}}"#.utf8)
+        let result = ClaudeStatusMapper.map(jsonData: data, capturedAt: referenceCapturedAt)
+        #expect(result == .failure(.invalidJSON(reason: "Tipo de campo incompatível")))
+    }
 
     @Test("payload completo mapeia todos os campos")
     func fullPayload() throws {

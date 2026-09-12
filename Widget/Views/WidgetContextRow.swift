@@ -18,33 +18,24 @@ struct WidgetContextRow: View {
         HStack(spacing: spacing) {
 
             Image(systemName: "doc.text")
-                .font(.caption2)
+                .font(.caption)
                 .foregroundStyle(.secondary)
 
             Text("Contexto")
-                .font(.caption2)
+                .font(.caption.weight(.medium))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
+                .fixedSize()
 
-            ProgressView(
-                value: normalizedPercentage,
-                total: 100
-            )
-            .progressViewStyle(.linear)
-            .tint(
-                usageColor(
-                    for: normalizedPercentage
-                )
-            )
-            .frame(maxWidth: .infinity)
-            .layoutPriority(1)
+            ContextGradientBar(percentage: normalizedPercentage)
+                .frame(maxWidth: .infinity)
 
             Text(
                 "\(Int(normalizedPercentage.rounded()))%"
             )
-            .font(.caption2.weight(.semibold))
-            .foregroundStyle(.secondary)
+            .font(.caption.weight(.semibold))
             .lineLimit(1)
+            .fixedSize()
         }
         .frame(maxWidth: .infinity)
         .padding(padding)
@@ -57,7 +48,46 @@ struct WidgetContextRow: View {
             .fill(
                 Color.primary.opacity(0.06)
             )
+            .overlay {
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
+            }
         }
+    }
+}
+
+
+/// Barra do contexto com gradiente verde -> azul sobre uma trilha neutra. Ao contrário
+/// dos gauges de SESSÃO/SEMANAL, essa cor não é semântica de alerta — só
+/// marca a posição na faixa 0...100%, por isso não usa `usageColor`.
+private struct ContextGradientBar: View {
+
+    let percentage: Double
+
+    private let barHeight: CGFloat = 7
+
+    private static let gradient = LinearGradient(
+        colors: [.green, .cyan],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
+
+    var body: some View {
+
+        GeometryReader { geo in
+
+            ZStack(alignment: .leading) {
+
+                Capsule()
+                    .fill(Color.primary.opacity(0.12))
+
+                Capsule()
+                    .fill(Self.gradient)
+                    .frame(width: geo.size.width * percentage / 100)
+            }
+        }
+        .frame(height: barHeight)
+        .clipShape(Capsule())
     }
 }
 

@@ -27,18 +27,20 @@ struct PercentageRing: View {
         ZStack {
 
             Circle()
+                .inset(by: lineWidth / 2)
                 .stroke(
                     color.opacity(0.24),
                     lineWidth: lineWidth
                 )
 
             Circle()
+                .inset(by: lineWidth / 2)
                 .trim(
                     from: 0,
                     to: normalizedPercentage
                 )
                 .stroke(
-                    color,
+                    color.gradient,
                     style: StrokeStyle(
                         lineWidth: lineWidth,
                         lineCap: .round
@@ -51,6 +53,8 @@ struct PercentageRing: View {
 
             Text(valueText)
                 .font(valueFont)
+                .monospacedDigit()
+                .padding(.horizontal, lineWidth)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
         }

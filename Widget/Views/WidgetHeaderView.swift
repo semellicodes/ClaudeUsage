@@ -3,6 +3,7 @@ import SwiftUI
 struct WidgetHeaderView: View {
 
     let modelDisplayName: String?
+    var capturedAt: Date? = nil
     let spacing: CGFloat
 
     var body: some View {
@@ -14,17 +15,23 @@ struct WidgetHeaderView: View {
                 .foregroundStyle(.secondary)
 
             Text("Claude Code")
-                .font(.subheadline.weight(.semibold))
+                .font(.headline.weight(.bold))
                 .lineLimit(1)
 
             Spacer(minLength: spacing)
 
             if let modelDisplayName {
 
-                Text(modelDisplayName)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text(modelDisplayName)
+                        .font(.caption)
+                    if let capturedAt {
+                        Text(capturedAt, format: .dateTime.day().month().hour().minute())
+                            .font(.system(size: 8))
+                    }
+                }
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
             }
 
             Image(systemName: "chevron.right")

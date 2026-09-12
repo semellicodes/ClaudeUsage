@@ -12,4 +12,8 @@ public struct RateLimit: Equatable, Sendable, Codable {
     public var remainingPercentage: Double {
         min(max(100 - usedPercentage, 0), 100)
     }
+
+    public func hasReset(at date: Date) -> Bool {
+        resetsAt <= date
+    }
 }

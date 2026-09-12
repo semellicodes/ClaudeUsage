@@ -5,7 +5,8 @@
 # conter cwd, transcript_path e outros dados privados).
 set -eu
 
-STATUS_DIR="$HOME/Library/Application Support/ClaudeUsage/status"
+# Override explícito para testes isolados; a configuração normal usa o diretório padrão.
+STATUS_DIR="${CLAUDE_USAGE_STATUS_DIR:-$HOME/Library/Application Support/ClaudeUsage/status}"
 STATUS_FILE="$STATUS_DIR/latest.json"
 
 mkdir -p "$STATUS_DIR"

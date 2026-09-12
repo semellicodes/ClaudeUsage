@@ -24,6 +24,51 @@ private let sampleSnapshot = UsageSnapshot(
 @Suite("SharedUsageStore")
 struct SharedUsageStoreTests {
 
+    @Test("seleção de modelo preserva leituras independentes e o automático acompanha a última")
+    func modelSnapshots() throws {
+        try withIsolatedStore { store, _ in
+            try store.save(sampleSnapshot)
+            let sonnet = UsageSnapshot(
+                schemaVersion: 1, capturedAt: sampleSnapshot.capturedAt.addingTimeInterval(60),
+                claudeCodeVersion: nil, sessionID: nil, modelDisplayName: "Sonnet 5",
+                fiveHour: nil, sevenDay: nil, context: nil
+            )
+            try store.save(sonnet)
+            #expect(store.loadLatestSnapshot() == sonnet)
+            #expect(store.loadLatestSnapshot(for: .sonnet) == sonnet)
+            #expect(store.loadLatestSnapshot(for: .opus) == sampleSnapshot)
+            // A ausência de 5h continua sendo ausência, sem copiar outra leitura.
+            #expect(store.loadLatestSnapshot(for: .sonnet)?.fiveHour == nil)
+        }
+    }
+
+    @Test("modelo sem leitura não recebe os dados de outro modelo")
+    func missingModel() throws {
+        try withIsolatedStore { store, _ in
+            try store.save(sampleSnapshot)
+            #expect(store.loadLatestSnapshot(for: .sonnet) == nil)
+        }
+    }
+
+    @Test("snapshot legado é aproveitado somente para o modelo correspondente")
+    func legacyModelSnapshot() throws {
+        try withIsolatedStore { store, suite in
+            let defaults = try #require(UserDefaults(suiteName: suite))
+            defaults.set(try JSONEncoder().encode(sampleSnapshot), forKey: "latestUsageSnapshot")
+            #expect(store.loadLatestSnapshot(for: .opus) == sampleSnapshot)
+            #expect(store.loadLatestSnapshot(for: .sonnet) == nil)
+        }
+    }
+
+    @Test("reconhece famílias sem fixar versão nem aceitar nomes parecidos")
+    func modelNames() {
+        #expect(UsageModel(displayName: "Claude Sonnet 5") == .sonnet)
+        #expect(UsageModel(displayName: "OPUS 5") == .opus)
+        #expect(UsageModel(displayName: "Haiku") == nil)
+        #expect(UsageModel(displayName: "NotSonnet") == nil)
+        #expect(UsageModel(displayName: nil) == nil)
+    }
+
     @Test("Shared Store vazio retorna nil")
     func emptyStoreReturnsNil() throws {
         try withIsolatedStore { store, _ in

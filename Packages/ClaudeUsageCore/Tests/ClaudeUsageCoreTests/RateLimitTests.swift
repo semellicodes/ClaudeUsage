@@ -4,6 +4,15 @@ import ClaudeUsageCore
 
 @Suite("RateLimit")
 struct RateLimitTests {
+    @Test("reset é reconhecido no instante exato, sem inventar consumo zero")
+    func resetBoundary() {
+        let reset = Date(timeIntervalSince1970: 1_800_000_000)
+        let limit = RateLimit(usedPercentage: 89, resetsAt: reset)
+        #expect(!limit.hasReset(at: reset.addingTimeInterval(-1)))
+        #expect(limit.hasReset(at: reset))
+        #expect(limit.hasReset(at: reset.addingTimeInterval(1)))
+        #expect(limit.usedPercentage == 89)
+    }
     @Test("remainingPercentage é o complemento de usedPercentage")
     func remainingComplement() {
         let rateLimit = RateLimit(usedPercentage: 23.5, resetsAt: Date(timeIntervalSince1970: 0))

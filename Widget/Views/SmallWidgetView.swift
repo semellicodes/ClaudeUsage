@@ -18,40 +18,23 @@ struct SmallWidgetView: View {
 
                 Group {
 
-                    if let snapshot = entry.snapshot {
-
-                        if let fiveHour = snapshot.fiveHour,
-                           fiveHour.resetsAt > entry.date {
-
+                    if entry.snapshot != nil {
+                        if let limit = entry.selectedRateLimit, !limit.hasReset(at: entry.date) {
                             sessionContent(
-                                rateLimit: fiveHour,
-                                unit: .hours,
+                                rateLimit: limit,
+                                unit: entry.window == .fiveHour ? .hours : .days,
                                 metrics: metrics
                             )
-
-                        } else if let sevenDay = snapshot.sevenDay,
-                                  sevenDay.resetsAt > entry.date {
-
-                            sessionContent(
-                                rateLimit: sevenDay,
-                                unit: .days,
-                                metrics: metrics
-                            )
-
                         } else {
-
                             placeholder(
-                                text: "Limites ainda não disponíveis",
-                                systemImage: "clock.arrow.circlepath"
+                                text: entry.selectedRateLimit == nil
+                                    ? "Limite de \(entry.window == .fiveHour ? "5h" : "7d") não informado pelo Claude Code"
+                                    : "Janela reiniciada. O próximo uso será informado pelo Claude Code.",
+                                systemImage: entry.selectedRateLimit == nil ? "minus.circle" : "clock.badge.checkmark"
                             )
                         }
-
                     } else {
-
-                        placeholder(
-                            text: "Abra o Claude Code e envie uma mensagem",
-                            systemImage: nil
-                        )
+                        placeholder(text: entry.missingDataMessage, systemImage: nil)
                     }
                 }
                 .padding(
@@ -62,6 +45,12 @@ struct SmallWidgetView: View {
                     maxWidth: .infinity,
                     maxHeight: .infinity
                 )
+                if let capturedAt = entry.snapshot?.capturedAt {
+                    Text(capturedAt, format: .dateTime.day().month().hour().minute())
+                        .font(.system(size: 8))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
             }
             .padding(metrics.padding)
             .frame(
@@ -71,7 +60,7 @@ struct SmallWidgetView: View {
             )
         }
         .containerBackground(for: .widget) {
-            Color(nsColor: .windowBackgroundColor)
+            WidgetBackground()
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilityLabel)
@@ -86,11 +75,16 @@ struct SmallWidgetView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Text("Claude")
-                .font(.subheadline.weight(.semibold))
+            Text(entry.model.name ?? entry.snapshot?.modelDisplayName ?? "Claude")
+                .font(.headline.weight(.bold))
+                .minimumScaleFactor(0.7)
                 .lineLimit(1)
 
             Spacer(minLength: 0)
+
+            Text(entry.window == .fiveHour ? "5h" : "7d")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -122,19 +116,28 @@ struct SmallWidgetView: View {
                 color: usageColor(for: rateLimit.usedPercentage),
                 valueText: "\(percentages.used)%",
                 valueFont: .system(
-                    .title2,
+                    .title,
                     design: .rounded
                 ).bold()
             )
 
             Text("\(percentages.remaining)% restante")
-                .font(.footnote)
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
 
-            Text("reset em \(resetText)")
-                .font(.caption2)
+            HStack(spacing: 3) {
+                Text("reset em")
+                if unit == .hours {
+                    Text(timerInterval: entry.date...rateLimit.resetsAt, countsDown: true)
+                        .monospacedDigit()
+                        .fixedSize()
+                } else {
+                    Text(resetText)
+                }
+            }
+                .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.72)
@@ -182,23 +185,15 @@ struct SmallWidgetView: View {
 
     private var accessibilityLabel: String {
 
-        guard let snapshot = entry.snapshot else {
-            return "ClaudeUsage: sem dados carregados ainda"
+        guard entry.snapshot != nil else { return entry.missingDataMessage }
+        let window = entry.window == .fiveHour ? "5 horas" : "7 dias"
+        guard let limit = entry.selectedRateLimit else {
+            return "ClaudeUsage: limite não informado de \(window)"
         }
-
-        if let fiveHour = snapshot.fiveHour,
-           fiveHour.resetsAt > entry.date {
-
-            return "ClaudeUsage: \(Int(fiveHour.usedPercentage)) por cento usado no limite de 5 horas"
+        guard !limit.hasReset(at: entry.date) else {
+            return "ClaudeUsage: janela reiniciada de \(window)"
         }
-
-        if let sevenDay = snapshot.sevenDay,
-           sevenDay.resetsAt > entry.date {
-
-            return "ClaudeUsage: \(Int(sevenDay.usedPercentage)) por cento usado no limite de 7 dias"
-        }
-
-        return "ClaudeUsage: limites ainda não disponíveis"
+        return "ClaudeUsage: \(displayedPercentages(for: limit).used) por cento usado no limite de \(window)"
     }
 }
 
@@ -219,19 +214,19 @@ private struct SmallWidgetMetrics {
             size.height
         )
 
-        padding = side * 0.085
+        padding = side * 0.075
 
         gaugeDiameter = min(
             max(
-                side * 0.42,
-                52
+                side * 0.41,
+                54
             ),
-            78
+            88
         )
 
-        verticalSpacing = side * 0.035
+        verticalSpacing = 6
 
-        headerBottomSpacing = side * 0.045
+        headerBottomSpacing = 5
     }
 }
 

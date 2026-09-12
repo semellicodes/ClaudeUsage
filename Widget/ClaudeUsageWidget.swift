@@ -7,8 +7,9 @@ struct ClaudeUsageWidget: Widget {
 
     var body: some WidgetConfiguration {
 
-        StaticConfiguration(
+        AppIntentConfiguration(
             kind: kind,
+            intent: WidgetSelectionIntent.self,
             provider: UsageTimelineProvider()
         ) { entry in
 
@@ -16,7 +17,7 @@ struct ClaudeUsageWidget: Widget {
         }
         .configurationDisplayName("Claude Usage")
         .description(
-            "Acompanhe o uso do Claude Code: limites de 5h/7d e contexto."
+            "Acompanhe o uso do Claude Code no terminal: limites de 5h/7d e contexto."
         )
         .supportedFamilies([
             .systemSmall,

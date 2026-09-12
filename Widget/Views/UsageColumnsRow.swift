@@ -10,59 +10,23 @@ struct UsageColumnsRow: View {
     let labelSpacing: CGFloat
 
     var body: some View {
-        GeometryReader { geo in
-
-            let rowHeight = gaugeDiameter + 38
-            let columnWidth = geo.size.width * 0.44
-
-            ZStack(alignment: .topLeading) {
-
-                if let fiveHour = snapshot.fiveHour {
-                    UsageColumnView(
-                        title: "SESSÃO",
-                        rateLimit: fiveHour,
-                        referenceDate: referenceDate,
-                        remainingUnit: .hours,
-                        gaugeDiameter: gaugeDiameter,
-                        labelSpacing: labelSpacing
-                    )
-                    .frame(
-                        width: columnWidth,
-                        height: rowHeight,
-                        alignment: .top
-                    )
-                    .position(
-                        x: geo.size.width * 0.25,
-                        y: rowHeight / 2
-                    )
-                }
-
-                if let sevenDay = snapshot.sevenDay {
-                    UsageColumnView(
-                        title: "SEMANAL",
-                        rateLimit: sevenDay,
-                        referenceDate: referenceDate,
-                        remainingUnit: .days,
-                        gaugeDiameter: gaugeDiameter,
-                        labelSpacing: labelSpacing
-                    )
-                    .frame(
-                        width: columnWidth,
-                        height: rowHeight,
-                        alignment: .top
-                    )
-                    .position(
-                        x: geo.size.width * 0.75,
-                        y: rowHeight / 2
-                    )
-                }
-            }
-            .frame(
-                width: geo.size.width,
-                height: rowHeight
+        HStack(alignment: .top, spacing: columnSpacing) {
+            UsageColumnView(
+                title: "SESSÃO · 5H", rateLimit: snapshot.fiveHour,
+                referenceDate: referenceDate, remainingUnit: .hours,
+                gaugeDiameter: gaugeDiameter, labelSpacing: labelSpacing
+            )
+            Rectangle()
+                .fill(Color.primary.opacity(0.12))
+                .frame(width: 1, height: gaugeDiameter)
+                .frame(maxHeight: .infinity)
+            UsageColumnView(
+                title: "SEMANAL · 7D", rateLimit: snapshot.sevenDay,
+                referenceDate: referenceDate, remainingUnit: .days,
+                gaugeDiameter: gaugeDiameter, labelSpacing: labelSpacing
             )
         }
-        .frame(height: gaugeDiameter + 38)
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -70,7 +34,7 @@ struct UsageColumnsRow: View {
 struct UsageColumnView: View {
 
     let title: String
-    let rateLimit: RateLimit
+    let rateLimit: RateLimit?
     let referenceDate: Date
     let remainingUnit: RemainingUnit
     let gaugeDiameter: CGFloat
@@ -79,13 +43,13 @@ struct UsageColumnView: View {
     private var resetText: String {
         durationText(
             from: referenceDate,
-            to: rateLimit.resetsAt,
+            to: rateLimit?.resetsAt ?? referenceDate,
             unit: remainingUnit
         )
     }
 
     private var usedText: String {
-        "\(displayedPercentages(for: rateLimit).used)%"
+        rateLimit.map { "\(displayedPercentages(for: $0).used)%" } ?? "—"
     }
 
     var body: some View {
@@ -96,14 +60,14 @@ struct UsageColumnView: View {
         ) {
 
             Text(title)
-                .font(.caption2.weight(.medium))
+                .font(.caption.weight(.bold))
                 .foregroundStyle(.secondary)
                 .tracking(0.6)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity)
                 .multilineTextAlignment(.center)
 
-            if rateLimit.resetsAt > referenceDate {
+            if let rateLimit, !rateLimit.hasReset(at: referenceDate) {
 
                 PercentageRing(
                     percentage: rateLimit.usedPercentage,
@@ -113,14 +77,23 @@ struct UsageColumnView: View {
                     ),
                     valueText: usedText,
                     valueFont: .system(
-                        size: 15,
+                        size: 20,
                         weight: .bold,
                         design: .rounded
                     )
                 )
 
-                Text("reset em \(resetText)")
-                    .font(.caption2)
+                HStack(spacing: 3) {
+                    Text("reset em")
+                    if remainingUnit == .hours {
+                        Text(timerInterval: referenceDate...rateLimit.resetsAt, countsDown: true)
+                            .monospacedDigit()
+                            .fixedSize()
+                    } else {
+                        Text(resetText)
+                    }
+                }
+                    .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
@@ -130,14 +103,15 @@ struct UsageColumnView: View {
             } else {
 
                 Label(
-                    "Aguardando atualização",
-                    systemImage: "clock.arrow.circlepath"
+                    rateLimit == nil ? "Não informado" : "Janela reiniciada",
+                    systemImage: rateLimit == nil ? "minus.circle" : "clock.badge.checkmark"
                 )
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
                 .frame(maxWidth: .infinity)
+                .frame(height: gaugeDiameter)
             }
         }
         .frame(

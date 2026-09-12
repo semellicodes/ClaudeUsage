@@ -41,12 +41,30 @@ public struct SharedUsageStore: @unchecked Sendable {
     public func save(_ snapshot: UsageSnapshot) throws {
         let data = try JSONEncoder().encode(snapshot)
         userDefaults.set(data, forKey: Self.snapshotKey)
+        if let model = UsageModel(displayName: snapshot.modelDisplayName) {
+            userDefaults.set(data, forKey: Self.snapshotKey + "." + model.rawValue)
+        }
     }
 
     /// `nil` cobre igualmente: nada gravado ainda, dado corrompido/ilegível,
     /// ou `schemaVersion` diferente da atual (V1 não migra formatos antigos).
     public func loadLatestSnapshot() -> UsageSnapshot? {
-        guard let data = userDefaults.data(forKey: Self.snapshotKey) else {
+        loadSnapshot(key: Self.snapshotKey)
+    }
+
+    /// Última leitura recebida com este modelo; não representa uma cota exclusiva dele.
+    public func loadLatestSnapshot(for model: UsageModel) -> UsageSnapshot? {
+        if let snapshot = loadSnapshot(key: Self.snapshotKey + "." + model.rawValue) {
+            return snapshot
+        }
+        // Compatibilidade com o snapshot único das versões anteriores.
+        guard let latest = loadLatestSnapshot(),
+              UsageModel(displayName: latest.modelDisplayName) == model else { return nil }
+        return latest
+    }
+
+    private func loadSnapshot(key: String) -> UsageSnapshot? {
+        guard let data = userDefaults.data(forKey: key) else {
             return nil
         }
         guard let snapshot = try? JSONDecoder().decode(UsageSnapshot.self, from: data) else {

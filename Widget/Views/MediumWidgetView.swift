@@ -14,53 +14,42 @@ struct MediumWidgetView: View {
 
                 // Cabeçalho
                 WidgetHeaderView(
-                    modelDisplayName: entry.snapshot?.modelDisplayName,
+                    modelDisplayName: entry.snapshot?.modelDisplayName ?? entry.model.name,
+                    capturedAt: entry.snapshot?.capturedAt,
                     spacing: metrics.headerItemSpacing
                 )
 
                 if let snapshot = entry.snapshot {
 
-                    if snapshot.fiveHour == nil &&
-                        snapshot.sevenDay == nil {
+                    UsageColumnsRow(
+                        snapshot: snapshot,
+                        referenceDate: entry.date,
+                        columnSpacing: metrics.columnSpacing,
+                        gaugeDiameter: metrics.gaugeDiameter,
+                        labelSpacing: metrics.labelGaugeSpacing
+                    )
+                    .padding(.top, metrics.headerBottomSpacing)
+                    .frame(maxHeight: .infinity)
 
-                        placeholder(
-                            text: "Limites ainda não disponíveis",
-                            systemImage: "clock.arrow.circlepath"
+                    // Contexto independe da disponibilidade dos limites.
+                    if let context = snapshot.context,
+                       let used = context.usedPercentage {
+
+                        WidgetContextRow(
+                            usedPercentage: used,
+                            spacing: metrics.contextRowSpacing,
+                            padding: metrics.contextRowPadding
                         )
-                        .padding(.top, metrics.headerBottomSpacing)
-
-                    } else {
-
-                        // Sessão + Semanal
-                        UsageColumnsRow(
-                            snapshot: snapshot,
-                            referenceDate: entry.date,
-                            columnSpacing: metrics.columnSpacing,
-                            gaugeDiameter: metrics.gaugeDiameter,
-                            labelSpacing: metrics.labelGaugeSpacing
+                        .padding(
+                            .top,
+                            metrics.columnsBottomSpacing
                         )
-                        .padding(.top, metrics.headerBottomSpacing)
-
-                        // Contexto
-                        if let context = snapshot.context,
-                           let used = context.usedPercentage {
-
-                            WidgetContextRow(
-                                usedPercentage: used,
-                                spacing: metrics.contextRowSpacing,
-                                padding: metrics.contextRowPadding
-                            )
-                            .padding(
-                                .top,
-                                metrics.columnsBottomSpacing
-                            )
-                        }
                     }
 
                 } else {
 
                     placeholder(
-                        text: "Abra o Claude Code e envie uma mensagem para carregar o uso",
+                        text: entry.missingDataMessage,
                         systemImage: nil
                     )
                     .padding(.top, metrics.headerBottomSpacing)
@@ -81,7 +70,7 @@ struct MediumWidgetView: View {
             )
         }
         .containerBackground(for: .widget) {
-            Color(nsColor: .windowBackgroundColor)
+            WidgetBackground()
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
@@ -136,7 +125,7 @@ struct MediumWidgetView: View {
         var parts: [String] = []
 
         if let fiveHour = snapshot.fiveHour,
-           fiveHour.resetsAt > entry.date {
+           !fiveHour.hasReset(at: entry.date) {
 
             parts.append(
                 "\(Int(fiveHour.usedPercentage)) por cento usado na sessão"
@@ -144,7 +133,7 @@ struct MediumWidgetView: View {
         }
 
         if let sevenDay = snapshot.sevenDay,
-           sevenDay.resetsAt > entry.date {
+           !sevenDay.hasReset(at: entry.date) {
 
             parts.append(
                 "\(Int(sevenDay.usedPercentage)) por cento usado no limite semanal"
@@ -191,7 +180,7 @@ private struct MediumWidgetMetrics {
 
         // Margens externas
         horizontalPadding = 18
-        verticalPadding = 9
+        verticalPadding = 11
 
         // Cabeçalho
         headerItemSpacing = 6
@@ -201,13 +190,16 @@ private struct MediumWidgetMetrics {
         columnSpacing = 24
 
         // Título -> círculo -> reset
-        labelGaugeSpacing = 4
+        labelGaugeSpacing = 3
 
         // Tamanho dos círculos
-        gaugeDiameter = 58
+        // Reserva cabeçalho, legendas, contexto e margens antes de dimensionar o anel.
+        let reservedHeight = verticalPadding * 2 + 25 + headerBottomSpacing
+            + 24 + labelGaugeSpacing * 2 + 24 + 4
+        gaugeDiameter = min(68, max(32, size.height - reservedHeight))
 
         // Distância até Contexto
-        columnsBottomSpacing = 6
+        columnsBottomSpacing = 4
 
         // Linha de contexto
         contextRowSpacing = 7

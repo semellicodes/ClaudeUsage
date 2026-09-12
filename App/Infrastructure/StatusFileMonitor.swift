@@ -35,8 +35,8 @@ final class StatusFileMonitor {
     /// Lê imediatamente (estado atual no launch) e passa a observar o diretório.
     func start() {
         queue.async { [weak self] in
-            self?.readLatestSnapshot()
             self?.beginWatchingDirectory()
+            self?.readLatestSnapshot()
         }
     }
 
@@ -54,11 +54,16 @@ final class StatusFileMonitor {
 
         // Diretório inexistente é normal (statusLine ainda não rodou); criamos
         // com 700 só para termos o que observar, mesma disciplina do script.
-        try? FileManager.default.createDirectory(
-            at: statusDirectoryURL,
-            withIntermediateDirectories: true,
-            attributes: [.posixPermissions: 0o700]
-        )
+        do {
+            try FileManager.default.createDirectory(
+                at: statusDirectoryURL,
+                withIntermediateDirectories: true,
+                attributes: [.posixPermissions: 0o700]
+            )
+        } catch {
+            Self.logger.error("Não foi possível criar o diretório de status.")
+            return
+        }
 
         let fileDescriptor = open(statusDirectoryURL.path, O_EVTONLY)
         guard fileDescriptor >= 0 else {
@@ -68,11 +73,18 @@ final class StatusFileMonitor {
 
         let newSource = DispatchSource.makeFileSystemObjectSource(
             fileDescriptor: fileDescriptor,
-            eventMask: .write,
+            eventMask: [.write, .delete, .rename],
             queue: queue
         )
         newSource.setEventHandler { [weak self] in
-            self?.scheduleDebouncedRead()
+            guard let self else { return }
+            let events = self.source?.data ?? []
+            if !events.intersection([.delete, .rename]).isEmpty {
+                self.source?.cancel()
+                self.source = nil
+                self.beginWatchingDirectory()
+            }
+            self.scheduleDebouncedRead()
         }
         newSource.setCancelHandler {
             close(fileDescriptor)
@@ -91,13 +103,19 @@ final class StatusFileMonitor {
     }
 
     private func readLatestSnapshot() {
-        guard let data = try? Data(contentsOf: statusFileURL) else {
-            // Arquivo inexistente é o estado normal "aguardando dados"; falha
-            // transitória de leitura preserva o último snapshot válido.
+        let data: Data
+        do {
+            data = try Data(contentsOf: statusFileURL)
+        } catch let error as CocoaError where error.code == .fileReadNoSuchFile {
+            return
+        } catch {
+            Self.logger.error("Não foi possível ler o arquivo de status; leitura anterior preservada.")
             return
         }
 
-        switch ClaudeStatusMapper.map(jsonData: data, capturedAt: Date()) {
+        let capturedAt = (try? statusFileURL.resourceValues(forKeys: [.contentModificationDateKey]))?
+            .contentModificationDate ?? Date()
+        switch ClaudeStatusMapper.map(jsonData: data, capturedAt: capturedAt) {
         case .success(let snapshot):
             let callback = onSnapshotUpdate
             Task { @MainActor in
