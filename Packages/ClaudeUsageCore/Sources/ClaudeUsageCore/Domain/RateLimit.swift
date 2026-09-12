@@ -2,9 +2,10 @@ import Foundation
 
 public struct RateLimit: Equatable, Sendable, Codable {
     public let usedPercentage: Double
-    public let resetsAt: Date
+    /// A conta pode informar uso (inclusive 0%) sem uma janela de reset ativa.
+    public let resetsAt: Date?
 
-    public init(usedPercentage: Double, resetsAt: Date) {
+    public init(usedPercentage: Double, resetsAt: Date?) {
         self.usedPercentage = usedPercentage
         self.resetsAt = resetsAt
     }
@@ -14,6 +15,6 @@ public struct RateLimit: Equatable, Sendable, Codable {
     }
 
     public func hasReset(at date: Date) -> Bool {
-        resetsAt <= date
+        resetsAt.map { $0 <= date } ?? false
     }
 }

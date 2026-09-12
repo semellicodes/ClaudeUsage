@@ -28,8 +28,8 @@ struct SmallWidgetView: View {
                         } else {
                             placeholder(
                                 text: entry.selectedRateLimit == nil
-                                    ? "Limite de \(entry.window == .fiveHour ? "5h" : "7d") não informado pelo Claude Code"
-                                    : "Janela reiniciada. O próximo uso será informado pelo Claude Code.",
+                                    ? "Limite de \(entry.window == .fiveHour ? "5h" : "7d") não informado pela fonte"
+                                    : "Janela reiniciada. Aguardando a próxima atualização.",
                                 systemImage: entry.selectedRateLimit == nil ? "minus.circle" : "clock.badge.checkmark"
                             )
                         }
@@ -99,12 +99,6 @@ struct SmallWidgetView: View {
 
         let percentages = displayedPercentages(for: rateLimit)
 
-        let resetText = durationText(
-            from: entry.date,
-            to: rateLimit.resetsAt,
-            unit: unit
-        )
-
         VStack(
             alignment: .center,
             spacing: metrics.verticalSpacing
@@ -127,14 +121,20 @@ struct SmallWidgetView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
 
-            HStack(spacing: 3) {
-                Text("reset em")
-                if unit == .hours {
-                    Text(timerInterval: entry.date...rateLimit.resetsAt, countsDown: true)
-                        .monospacedDigit()
-                        .fixedSize()
+            Group {
+                if let reset = rateLimit.resetsAt {
+                    HStack(spacing: 3) {
+                        Text("reset em")
+                        if unit == .hours {
+                            Text(timerInterval: entry.date...reset, countsDown: true)
+                                .monospacedDigit()
+                                .fixedSize()
+                        } else {
+                            Text(durationText(from: entry.date, to: reset, unit: unit))
+                        }
+                    }
                 } else {
-                    Text(resetText)
+                    Text("Reinício não informado")
                 }
             }
                 .font(.caption)

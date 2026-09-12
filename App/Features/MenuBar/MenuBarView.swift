@@ -13,11 +13,13 @@ struct MenuBarView: View {
                 if let snapshot {
                     content(for: snapshot, at: timeline.date)
                 } else {
-                    Text("Abra o Claude Code no terminal e envie uma mensagem para carregar o uso")
+                    Text("Ative a sincronização da conta para carregar os limites de uso.")
                         .font(.callout)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                Text("Fonte: Claude Code no terminal. O aplicativo Claude Desktop não atualiza este coletor.")
+                Text(snapshot?.source == .account
+                     ? "Fonte: conta Claude · uso compartilhado entre Desktop e terminal."
+                     : "Fonte desta leitura: statusLine do terminal.")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -40,7 +42,7 @@ struct MenuBarView: View {
         RateLimitRow(title: "5 horas", rateLimit: snapshot.fiveHour, referenceDate: date)
         RateLimitRow(title: "7 dias", rateLimit: snapshot.sevenDay, referenceDate: date)
         if snapshot.fiveHour == nil || snapshot.sevenDay == nil {
-            Text("Uma janela ausente não indica bloqueio. Os percentuais atualizam quando o Claude Code informa uma nova leitura.")
+            Text("Uma janela ausente não indica bloqueio. Aguarde uma nova leitura da fonte.")
                 .font(.caption2)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -75,15 +77,21 @@ private struct RateLimitRow: View {
                     let used = Int(rateLimit.usedPercentage.rounded())
                     Text("\(used)% usado · \(100 - used)% restante")
                         .font(.caption)
-                    HStack(spacing: 3) {
-                        Text("Reinicia em")
-                        Text(timerInterval: referenceDate...rateLimit.resetsAt, countsDown: true)
-                            .monospacedDigit().fixedSize()
+                    Group {
+                        if let reset = rateLimit.resetsAt {
+                            HStack(spacing: 3) {
+                                Text("Reinicia em")
+                                Text(timerInterval: referenceDate...reset, countsDown: true)
+                                    .monospacedDigit().fixedSize()
+                            }
+                        } else {
+                            Text("Data de reinício ainda não informada")
+                        }
                     }
                     .font(.caption2).foregroundStyle(.secondary)
                 }
             } else {
-                Text("Não informado pelo Claude Code")
+                Text("Não informado pela fonte")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }
@@ -126,9 +134,9 @@ struct MenuBarLabel: View {
 
 /// Atualiza a apresentação no reset sem reler arquivos nem fazer polling.
 private func resetDates(for snapshot: UsageSnapshot?) -> [Date] {
-    let now = Date()
-    return [now] + [snapshot?.fiveHour?.resetsAt, snapshot?.sevenDay?.resetsAt]
+    // A agenda precisa ser estável: incluir Date() recria um evento imediato
+    // a cada renderização e pode prender o MenuBarExtra num ciclo de updates.
+    [snapshot?.fiveHour?.resetsAt, snapshot?.sevenDay?.resetsAt]
         .compactMap { $0 }
-        .filter { $0 > now }
         .sorted()
 }

@@ -14,25 +14,24 @@ struct WidgetHeaderView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
-            Text("Claude Code")
+            Text("Claude")
                 .font(.headline.weight(.bold))
                 .lineLimit(1)
 
             Spacer(minLength: spacing)
 
-            if let modelDisplayName {
-
-                VStack(alignment: .trailing, spacing: 1) {
+            VStack(alignment: .trailing, spacing: 1) {
+                if let modelDisplayName {
                     Text(modelDisplayName)
                         .font(.caption)
-                    if let capturedAt {
-                        Text(capturedAt, format: .dateTime.day().month().hour().minute())
-                            .font(.system(size: 8))
-                    }
                 }
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
+                if let capturedAt {
+                    Text(capturedAt, format: .dateTime.day().month().hour().minute())
+                        .font(.system(size: 8))
+                }
             }
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
 
             Image(systemName: "chevron.right")
                 .font(.caption2.weight(.semibold))

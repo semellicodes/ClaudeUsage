@@ -151,6 +151,6 @@ struct ClaudeStatusMapperTests {
         let snapshot = try ClaudeStatusMapper.map(jsonData: data, capturedAt: referenceCapturedAt).get()
         let fiveHour = try #require(snapshot.fiveHour)
         let farFutureReference = Date(timeIntervalSince1970: 2_000_000_000)
-        #expect(fiveHour.resetsAt < farFutureReference)
+        #expect(try #require(fiveHour.resetsAt) < farFutureReference)
     }
 }

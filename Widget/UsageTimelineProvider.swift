@@ -8,10 +8,7 @@ struct UsageEntry: TimelineEntry {
     var window: WidgetWindowSelection = .fiveHour
 
     var missingDataMessage: String {
-        if let name = model.name {
-            return "Use \(name) no Claude Code pelo terminal e envie uma mensagem para carregar os dados"
-        }
-        return "Abra o Claude Code no terminal e envie uma mensagem para carregar o uso"
+        "Abra o ClaudeUsage e ative a sincronização da conta para carregar o uso"
     }
 
     var selectedRateLimit: RateLimit? {

@@ -54,6 +54,9 @@ public struct SharedUsageStore: @unchecked Sendable {
 
     /// Última leitura recebida com este modelo; não representa uma cota exclusiva dele.
     public func loadLatestSnapshot(for model: UsageModel) -> UsageSnapshot? {
+        if let latest = loadLatestSnapshot(), latest.source == .account {
+            return latest.selecting(model)
+        }
         if let snapshot = loadSnapshot(key: Self.snapshotKey + "." + model.rawValue) {
             return snapshot
         }

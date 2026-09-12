@@ -17,7 +17,7 @@ struct ClaudeUsageWidget: Widget {
         }
         .configurationDisplayName("Claude Usage")
         .description(
-            "Acompanhe o uso do Claude Code no terminal: limites de 5h/7d e contexto."
+            "Acompanhe os limites de 5h/7d da conta Claude no Desktop e no terminal."
         )
         .supportedFamilies([
             .systemSmall,

@@ -4,7 +4,7 @@
 Construir `ClaudeUsage`, utilitário nativo macOS com `MenuBarExtra` + widgets WidgetKit Small/Medium para acompanhar uso do Codex. V1 deve ser local-first, leve, sem servidor, scraping, API key, telemetria ou dependências de terceiros.
 
 ## Fonte oficial de dados
-Usar exclusivamente o JSON enviado pelo `statusLine` do Codex via `stdin`.
+A pedido explícito da usuária, a fonte principal pode consultar `GET https://api.anthropic.com/api/oauth/usage` com o OAuth existente do Claude Code. Leitura do Chaves e envio do token exclusivamente a esse endpoint foram autorizados na conversa. O statusLine permanece fonte local opcional. Esta decisão substitui a antiga restrição de exclusividade, rede e credenciais abaixo; as demais regras de privacidade permanecem.
 Campos relevantes: `version`, `session_id`, `model.display_name`, `rate_limits.five_hour.{used_percentage,resets_at}`, `rate_limits.seven_day.{used_percentage,resets_at}`, `context_window.{total_input_tokens,total_output_tokens,context_window_size,used_percentage,remaining_percentage}`.
 
 Regras de compatibilidade:
@@ -74,7 +74,7 @@ Após persistir snapshot válido, chamar `WidgetCenter.shared.reloadTimelines(of
 - não configurar `refreshInterval` sem necessidade real.
 
 ## Domain
-`RateLimit`: `usedPercentage: Double`, `resetsAt: Date`, `remainingPercentage` derivado e limitado a `0...100`.
+`RateLimit`: `usedPercentage: Double`, `resetsAt: Date?`, `remainingPercentage` derivado e limitado a `0...100`. A API de conta pode informar uso zero com reset null; preservar esse percentual sem inventar uma data.
 `ContextUsage`: `inputTokens?`, `outputTokens?`, `windowSize?`, `usedPercentage?`, `remainingPercentage?` — todos opcionais porque ausência precisa continuar sendo ausência, nunca virar zero.
 `UsageSnapshot`: `schemaVersion`, `capturedAt`, `claudeCodeVersion?`, `sessionID?`, `modelDisplayName?`, `fiveHour?`, `sevenDay?`, `context?`.
 
@@ -86,7 +86,7 @@ Mapper é a única fronteira DTO -> Domain: converte epoch para `Date`, valida n
 
 ## Persistência e privacidade
 O payload bruto pode conter `cwd`, `transcript_path` e outros dados privados. Compartilhar com Widget APENAS `UsageSnapshot`; nunca payload bruto, paths completos ou transcript.
-Sem rede, analytics, API key, credenciais ou logging de conteúdo. Usar `OSLog.Logger` apenas com mensagens técnicas seguras.
+Sem analytics, API key ou logging de conteúdo. Rede restrita à consulta de uso autorizada; nunca persistir tokens no ClaudeUsage ou no App Group. Não seguir redirecionamentos. Usar `OSLog.Logger` apenas com mensagens técnicas seguras.
 
 Usar App Group nos dois targets. Snapshot é pequeno: preferir `UserDefaults(suiteName:)` com `Data` de `JSONEncoder/JSONDecoder` e `schemaVersion`.
 Não inventar App Group: verificar signing/Team ID. Preferir `group.` provisionado quando funcionar; macOS também aceita `<TeamID>.<group-name>` conforme Apple. Mesmo ID nos dois targets.
@@ -166,7 +166,7 @@ Não mascarar erro para avançar: corrigir a causa antes da próxima etapa.
 - MenuBarExtra funciona como utilitário sem Dock; widgets Small/Medium leem o snapshot compartilhado.
 - ausência/null/corrupção transitória não causa crash nem apaga último snapshot válido.
 - shell nunca precisa acessar App Group; widget nunca lê payload bruto.
-- zero rede/API key/telemetria/dependência externa.
+- rede somente para a consulta autorizada da conta; zero API key/telemetria/dependência externa.
 - testes do Core passam e App/Widget compilam sem warnings novos.
 - estrutura continua coerente com este documento.
 
@@ -177,5 +177,5 @@ Após cada etapa significativa, informar objetivamente: arquivos alterados, o qu
 Prioridade: correção > simplicidade > manutenção > estética > micro-otimização.
 
 ## Compatibilidade verificada e entrega
-- O produto acompanha Claude Code. A coleta statusLine depende da interface de terminal; não prometer atualização pelo aplicativo Claude Desktop. Ver README.md.
+- O produto acompanha Claude. A sincronização da conta permite consultar uso do Desktop e terminal sem statusLine; exige login OAuth válido da mesma conta. A coleta statusLine continua dependendo do terminal. Ver README.md.
 - Ao concluir alterações solicitadas, executar as validações e fazer commit, informando o hash. Não enviar push sem pedido.

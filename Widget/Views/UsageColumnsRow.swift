@@ -40,14 +40,6 @@ struct UsageColumnView: View {
     let gaugeDiameter: CGFloat
     let labelSpacing: CGFloat
 
-    private var resetText: String {
-        durationText(
-            from: referenceDate,
-            to: rateLimit?.resetsAt ?? referenceDate,
-            unit: remainingUnit
-        )
-    }
-
     private var usedText: String {
         rateLimit.map { "\(displayedPercentages(for: $0).used)%" } ?? "—"
     }
@@ -83,14 +75,20 @@ struct UsageColumnView: View {
                     )
                 )
 
-                HStack(spacing: 3) {
-                    Text("reset em")
-                    if remainingUnit == .hours {
-                        Text(timerInterval: referenceDate...rateLimit.resetsAt, countsDown: true)
-                            .monospacedDigit()
-                            .fixedSize()
+                Group {
+                    if let reset = rateLimit.resetsAt {
+                        HStack(spacing: 3) {
+                            Text("reset em")
+                            if remainingUnit == .hours {
+                                Text(timerInterval: referenceDate...reset, countsDown: true)
+                                    .monospacedDigit()
+                                    .fixedSize()
+                            } else {
+                                Text(durationText(from: referenceDate, to: reset, unit: remainingUnit))
+                            }
+                        }
                     } else {
-                        Text(resetText)
+                        Text("Reinício não informado")
                     }
                 }
                     .font(.caption)

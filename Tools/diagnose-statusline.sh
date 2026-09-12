@@ -5,8 +5,8 @@ set -eu
 STATUS_DIR="${CLAUDE_USAGE_STATUS_DIR:-$HOME/Library/Application Support/ClaudeUsage/status}"
 STATUS_FILE="$STATUS_DIR/latest.json"
 
-print -r -- "Fonte: statusLine do Claude Code no terminal."
-print -r -- "O Claude Desktop não aciona este coletor nas sessões stream-json."
+print -r -- "Diagnóstico somente da fonte local: statusLine do Claude Code no terminal."
+print -r -- "A sincronização da conta para Desktop e terminal é verificada no menu do ClaudeUsage."
 
 if [[ ! -f "$STATUS_FILE" ]]; then
     print -r -- "Arquivo de origem: ausente."

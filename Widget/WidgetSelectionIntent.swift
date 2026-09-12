@@ -38,7 +38,7 @@ enum WidgetWindowSelection: String, AppEnum {
 struct WidgetSelectionIntent: WidgetConfigurationIntent {
     static var title: LocalizedStringResource = "Uso do Claude"
     static var description = IntentDescription(
-        "Escolha a última leitura por modelo. Os limites são da assinatura, não cotas independentes por modelo."
+        "Na sincronização da conta, 5h é compartilhado. O semanal usa o limite do modelo quando disponível; caso contrário, usa o geral da conta."
     )
 
     @Parameter(title: "Modelo", default: .automatic)

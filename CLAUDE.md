@@ -4,7 +4,7 @@
 Construir `ClaudeUsage`, utilitário nativo macOS com `MenuBarExtra` + widgets WidgetKit Small/Medium para acompanhar uso do Claude Code. V1 deve ser local-first, leve, sem servidor, scraping, API key, telemetria ou dependências de terceiros.
 
 ## Fonte oficial de dados
-Usar exclusivamente o JSON enviado pelo `statusLine` do Claude Code via `stdin`.
+A usuária autorizou substituir a exclusividade de statusLine pela consulta `GET https://api.anthropic.com/api/oauth/usage`, lendo o OAuth existente do Claude Code no Chaves e enviando-o somente a esse endpoint. O statusLine permanece opcional para a coleta local. Esta decisão substitui as antigas restrições de rede e credenciais abaixo, preservando as demais regras de privacidade. Ver README.md.
 Campos relevantes: `version`, `session_id`, `model.display_name`, `rate_limits.five_hour.{used_percentage,resets_at}`, `rate_limits.seven_day.{used_percentage,resets_at}`, `context_window.{total_input_tokens,total_output_tokens,context_window_size,used_percentage,remaining_percentage}`.
 
 Regras de compatibilidade:
@@ -74,7 +74,7 @@ Após persistir snapshot válido, chamar `WidgetCenter.shared.reloadTimelines(of
 - não configurar `refreshInterval` sem necessidade real.
 
 ## Domain
-`RateLimit`: `usedPercentage: Double`, `resetsAt: Date`, `remainingPercentage` derivado e limitado a `0...100`.
+`RateLimit`: `usedPercentage: Double`, `resetsAt: Date?`, `remainingPercentage` derivado e limitado a `0...100`. A API de conta pode informar uso zero com reset null; preservar esse percentual sem inventar uma data.
 `ContextUsage`: `inputTokens?`, `outputTokens?`, `windowSize?`, `usedPercentage?`, `remainingPercentage?` — todos opcionais porque ausência precisa continuar sendo ausência, nunca virar zero.
 `UsageSnapshot`: `schemaVersion`, `capturedAt`, `claudeCodeVersion?`, `sessionID?`, `modelDisplayName?`, `fiveHour?`, `sevenDay?`, `context?`.
 
@@ -86,7 +86,7 @@ Mapper é a única fronteira DTO -> Domain: converte epoch para `Date`, valida n
 
 ## Persistência e privacidade
 O payload bruto pode conter `cwd`, `transcript_path` e outros dados privados. Compartilhar com Widget APENAS `UsageSnapshot`; nunca payload bruto, paths completos ou transcript.
-Sem rede, analytics, API key, credenciais ou logging de conteúdo. Usar `OSLog.Logger` apenas com mensagens técnicas seguras.
+Sem analytics, API key ou logging de conteúdo. Rede restrita à consulta de uso autorizada; tokens não podem ser gravados pelo ClaudeUsage nem compartilhados com widgets. Não seguir redirecionamentos. Usar `OSLog.Logger` apenas com mensagens técnicas seguras.
 
 Usar App Group nos dois targets. Snapshot é pequeno: preferir `UserDefaults(suiteName:)` com `Data` de `JSONEncoder/JSONDecoder` e `schemaVersion`.
 Não inventar App Group: verificar signing/Team ID. Preferir `group.` provisionado quando funcionar; macOS também aceita `<TeamID>.<group-name>` conforme Apple. Mesmo ID nos dois targets.
@@ -166,7 +166,7 @@ Não mascarar erro para avançar: corrigir a causa antes da próxima etapa.
 - MenuBarExtra funciona como utilitário sem Dock; widgets Small/Medium leem o snapshot compartilhado.
 - ausência/null/corrupção transitória não causa crash nem apaga último snapshot válido.
 - shell nunca precisa acessar App Group; widget nunca lê payload bruto.
-- zero rede/API key/telemetria/dependência externa.
+- rede somente para consulta autorizada da conta; zero API key/telemetria/dependência externa.
 - testes do Core passam e App/Widget compilam sem warnings novos.
 - estrutura continua coerente com este documento.
 
