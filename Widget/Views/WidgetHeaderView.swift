@@ -8,7 +8,7 @@ struct WidgetHeaderView: View {
 
     var body: some View {
 
-        HStack(spacing: spacing) {
+        HStack(alignment: .firstTextBaseline, spacing: spacing) {
 
             Image(systemName: "sparkle")
                 .font(.caption)

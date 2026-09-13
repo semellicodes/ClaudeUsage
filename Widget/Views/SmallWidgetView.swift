@@ -72,7 +72,7 @@ struct SmallWidgetView: View {
 
     private var smallHeader: some View {
 
-        HStack(spacing: 6) {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
 
             Image(systemName: "sparkle")
                 .font(.caption)
@@ -113,7 +113,7 @@ struct SmallWidgetView: View {
                 color: usageColor(for: rateLimit.usedPercentage),
                 valueText: "\(percentages.used)%",
                 valueFont: .system(
-                    size: 20,
+                    size: metrics.gaugeTextSize,
                     weight: .bold,
                     design: .rounded
                 )
@@ -199,6 +199,7 @@ private struct SmallWidgetMetrics {
 
     let padding: CGFloat
     let gaugeDiameter: CGFloat
+    let gaugeTextSize: CGFloat
     let verticalSpacing: CGFloat
     let headerBottomSpacing: CGFloat
 
@@ -209,19 +210,17 @@ private struct SmallWidgetMetrics {
             size.height
         )
 
-        padding = side * 0.075
-
-        gaugeDiameter = min(
-            max(
-                side * 0.41,
-                54
-            ),
-            88
-        )
-
-        verticalSpacing = 6
-
-        headerBottomSpacing = 5
+        padding = side * 0.06
+        verticalSpacing = 3
+        headerBottomSpacing = 4
+        let headerHeight: CGFloat = 16
+        let captionHeight: CGFloat = 12
+        let footerHeight: CGFloat = 12
+        let reservedHeight = padding * 2 + headerHeight + captionHeight * 2
+            + footerHeight + verticalSpacing * 2 + headerBottomSpacing
+        gaugeDiameter = max(54, min((size.width - padding * 2) * 0.65,
+            size.height - reservedHeight, 112))
+        gaugeTextSize = gaugeDiameter * 0.30
     }
 }
 

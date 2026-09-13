@@ -8,23 +8,27 @@ struct UsageColumnsRow: View {
     let columnSpacing: CGFloat
     let gaugeDiameter: CGFloat
     let labelSpacing: CGFloat
+    let gaugeTextSize: CGFloat
+    let dividerHeight: CGFloat
+    let columnHeight: CGFloat
 
     var body: some View {
-        HStack(alignment: .top, spacing: columnSpacing) {
+        HStack(alignment: .center, spacing: columnSpacing) {
             UsageColumnView(
                 title: "SESSÃO · 5H", rateLimit: snapshot.fiveHour,
                 referenceDate: referenceDate, remainingUnit: .hours,
-                gaugeDiameter: gaugeDiameter, labelSpacing: labelSpacing
+                gaugeDiameter: gaugeDiameter, labelSpacing: labelSpacing, gaugeTextSize: gaugeTextSize
             )
+            .frame(height: columnHeight, alignment: .top)
             Rectangle()
                 .fill(Color.primary.opacity(0.12))
-                .frame(width: 1, height: gaugeDiameter)
-                .frame(maxHeight: .infinity)
+                .frame(width: 1, height: dividerHeight)
             UsageColumnView(
                 title: "SEMANAL · 7D", rateLimit: snapshot.sevenDay,
                 referenceDate: referenceDate, remainingUnit: .days,
-                gaugeDiameter: gaugeDiameter, labelSpacing: labelSpacing
+                gaugeDiameter: gaugeDiameter, labelSpacing: labelSpacing, gaugeTextSize: gaugeTextSize
             )
+            .frame(height: columnHeight, alignment: .top)
         }
         .fixedSize(horizontal: false, vertical: true)
     }
@@ -39,6 +43,7 @@ struct UsageColumnView: View {
     let remainingUnit: RemainingUnit
     let gaugeDiameter: CGFloat
     let labelSpacing: CGFloat
+    let gaugeTextSize: CGFloat
 
     private var usedText: String {
         rateLimit.map { "\(displayedPercentages(for: $0).used)%" } ?? "—"
@@ -69,7 +74,7 @@ struct UsageColumnView: View {
                     ),
                     valueText: usedText,
                     valueFont: .system(
-                        size: 17,
+                        size: gaugeTextSize,
                         weight: .bold,
                         design: .rounded
                     )

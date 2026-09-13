@@ -7,7 +7,9 @@ struct MediumWidgetView: View {
     let entry: UsageEntry
 
     var body: some View {
-            let metrics = MediumWidgetMetrics(size: entry.displaySize)
+            let metrics = MediumWidgetMetrics(size: entry.displaySize,
+                showsContext: entry.snapshot?.context?.usedPercentage != nil,
+                showsModel: (entry.snapshot?.modelDisplayName ?? entry.model.name) != nil)
 
             VStack(spacing: 0) {
 
@@ -25,7 +27,10 @@ struct MediumWidgetView: View {
                         referenceDate: entry.date,
                         columnSpacing: metrics.columnSpacing,
                         gaugeDiameter: metrics.gaugeDiameter,
-                        labelSpacing: metrics.labelGaugeSpacing
+                        labelSpacing: metrics.labelGaugeSpacing,
+                        gaugeTextSize: metrics.gaugeTextSize,
+                        dividerHeight: metrics.dividerHeight,
+                        columnHeight: metrics.columnHeight
                     )
                     .padding(.top, metrics.headerBottomSpacing)
                     .frame(maxHeight: .infinity)
@@ -177,13 +182,16 @@ private struct MediumWidgetMetrics {
     let columnSpacing: CGFloat
     let labelGaugeSpacing: CGFloat
     let gaugeDiameter: CGFloat
+    let gaugeTextSize: CGFloat
+    let dividerHeight: CGFloat
+    let columnHeight: CGFloat
 
     let columnsBottomSpacing: CGFloat
 
     let contextRowSpacing: CGFloat
     let contextRowPadding: EdgeInsets
 
-    init(size: CGSize) {
+    init(size: CGSize, showsContext: Bool, showsModel: Bool) {
 
         // Margens externas
         horizontalPadding = 18
@@ -194,16 +202,21 @@ private struct MediumWidgetMetrics {
         headerBottomSpacing = 5
 
         // Distância entre Sessão e Semanal
-        columnSpacing = 24
+        columnSpacing = 12
 
         // Título -> círculo -> reset
         labelGaugeSpacing = 3
 
-        // Tamanho dos círculos
-        // Reserva cabeçalho, legendas, contexto e margens antes de dimensionar o anel.
-        let reservedHeight = verticalPadding * 2 + 25 + headerBottomSpacing
-            + 24 + labelGaugeSpacing * 2 + 24 + 4
-        gaugeDiameter = min(68, max(32, size.height - reservedHeight))
+        let headerHeight: CGFloat = showsModel ? 25 : 16
+        let captionHeight: CGFloat = 12
+        let contextHeight: CGFloat = showsContext ? 28 : 0
+        let columnWidth = (size.width - horizontalPadding * 2 - columnSpacing * 2 - 1) / 2
+        let reservedHeight = verticalPadding * 2 + headerHeight + headerBottomSpacing
+            + captionHeight * 2 + labelGaugeSpacing * 2 + contextHeight
+        gaugeDiameter = max(32, min(columnWidth * 0.70, size.height - reservedHeight, 104))
+        gaugeTextSize = gaugeDiameter * 0.30
+        dividerHeight = gaugeDiameter + captionHeight + labelGaugeSpacing
+        columnHeight = gaugeDiameter + (captionHeight + labelGaugeSpacing) * 2
 
         // Distância até Contexto
         columnsBottomSpacing = 4
