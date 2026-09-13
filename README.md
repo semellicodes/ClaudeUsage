@@ -24,6 +24,8 @@ Os widgets antigos continuam no tipo **Claude Usage**, com seleção automática
 
 A galeria usa dados de demonstração apenas na prévia. Os widgets adicionados ao desktop sempre usam o armazenamento real; ausência de dados continua aparecendo como ausência.
 
+Ambas as configurações preservam o fundo com `containerBackgroundRemovable(false)`, evitando que o sistema remova a superfície que dá contraste ao conteúdo. Ao diagnosticar um widget vazio, confirme também a apresentação no desktop: uma timeline concluída com sucesso não comprova que o host desenhou o conteúdo. O erro 1103 é distinto e indica um pedido sem intent enviado a uma configuração que o exige; o tipo legado continua usando `StaticConfiguration` para aceitar esses pedidos.
+
 A API pode retornar `utilization: 0` com `resets_at: null` após liberar uma janela. O app preserva os 0% informados e apresenta “Reinício não informado” até receber uma data; não inventa uma contagem regressiva nem descarta o limite semanal.
 
 Em **Editar Widget**, escolha automático, Sonnet ou Opus. A janela de 5h é compartilhada. O semanal usa `seven_day_sonnet` ou `seven_day_opus` quando informado; caso contrário, usa o geral `seven_day`. A seleção não troca o modelo no Claude. O widget pequeno permite escolher 5h ou 7d.
