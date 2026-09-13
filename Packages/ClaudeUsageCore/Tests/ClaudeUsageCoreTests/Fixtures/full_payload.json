@@ -1,15 +1,15 @@
 {
-  "cwd": "/Users/paula/Developer/ClaudeUsage",
+  "cwd": "/Users/example/Projects/ClaudeUsage",
   "session_id": "abc123-def456",
-  "session_name": "claude-usage-dev",
-  "transcript_path": "/Users/paula/.claude/projects/example/transcript.jsonl",
+  "session_name": "example-session",
+  "transcript_path": "/Users/example/.claude/projects/example/transcript.jsonl",
   "model": {
     "id": "claude-opus-5",
     "display_name": "Opus"
   },
   "workspace": {
-    "current_dir": "/Users/paula/Developer/ClaudeUsage",
-    "project_dir": "/Users/paula/Developer/ClaudeUsage",
+    "current_dir": "/Users/example/Projects/ClaudeUsage",
+    "project_dir": "/Users/example/Projects/ClaudeUsage",
     "added_dirs": []
   },
   "version": "2.1.90",
