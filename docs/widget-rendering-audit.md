@@ -113,8 +113,11 @@ as ferramentas em `e08174a`. Esses commits posteriores à investigação foram
 preservados. Não houve reescrita de histórico ou alterações em credenciais.
 
 O defeito visual reproduzido foi corrigido. A organização das instalações foi
-concluída separadamente, conforme o registro abaixo. Permanece como manutenção
-separada a redução das plataformas do template.
+concluída separadamente, conforme o registro abaixo. As configurações herdadas
+de iOS/visionOS também foram removidas em uma etapa posterior: Debug e Release
+do app agora usam somente o SDK/plataforma macOS, sem chaves de interface,
+deployment targets ou famílias de dispositivos móveis. O caminho de frameworks
+foi consolidado no valor macOS que já era efetivo antes da limpeza.
 Login OAuth vencido continua sendo um problema distinto de coleta, sinalizado
 pelo app; não deve ser confundido com falha de renderização.
 
