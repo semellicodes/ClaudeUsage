@@ -7,7 +7,7 @@
       buildImplicitDependencies = "YES">
       <PreActions>
          <ExecutionAction ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
-            <ActionContent title = "Stop the installed ClaudeUsage before rebuilding" scriptText = "/usr/bin/pkill -x ClaudeUsage || true&#10;">
+            <ActionContent title = "Stop ClaudeUsage and its widget before rebuilding" scriptText = "/usr/bin/pkill -x ClaudeUsage || true&#10;/usr/bin/pkill -x ClaudeUsageWidgetExtension || true&#10;">
             </ActionContent>
          </ExecutionAction>
       </PreActions>

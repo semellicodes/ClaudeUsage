@@ -76,7 +76,9 @@ The product is built directly at `~/Applications/ClaudeUsage.app`; changing
 DerivedData directories does not create another installed app. The extension
 is embedded in that same bundle. Xcode supplies its own staging root for Archive.
 
-The main scheme stops the previous `ClaudeUsage` process before building.
+The main scheme stops both `ClaudeUsage` and `ClaudeUsageWidgetExtension` before
+building. The widget runs in a separate process; stopping only the app can leave
+the previous widget code in memory even after its bundle has been updated.
 `Cmd+R` builds and launches that same installation; `Cmd+B` and `Cmd+U` leave
 the app stopped, so reopen `~/Applications/ClaudeUsage.app` when finished.
 Because the installed app is the build product, Xcode Clean can remove it;
