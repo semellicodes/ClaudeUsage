@@ -27,7 +27,7 @@ struct WidgetHeaderView: View {
                 }
                 if let capturedAt {
                     Text(capturedAt, format: .dateTime.day().month().hour().minute())
-                        .font(.system(size: 8))
+                        .font(.system(size: 9))
                 }
             }
             .foregroundStyle(.secondary)

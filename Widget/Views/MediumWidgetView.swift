@@ -28,6 +28,7 @@ struct MediumWidgetView: View {
                         columnSpacing: metrics.columnSpacing,
                         gaugeDiameter: metrics.gaugeDiameter,
                         labelSpacing: metrics.labelGaugeSpacing,
+                        resetAdditionalSpacing: metrics.resetAdditionalSpacing,
                         gaugeTextSize: metrics.gaugeTextSize,
                         dividerHeight: metrics.dividerHeight,
                         columnHeight: metrics.columnHeight
@@ -181,6 +182,7 @@ private struct MediumWidgetMetrics {
 
     let columnSpacing: CGFloat
     let labelGaugeSpacing: CGFloat
+    let resetAdditionalSpacing: CGFloat
     let gaugeDiameter: CGFloat
     let gaugeTextSize: CGFloat
     let dividerHeight: CGFloat
@@ -206,6 +208,7 @@ private struct MediumWidgetMetrics {
 
         // Título -> círculo -> reset
         labelGaugeSpacing = 3
+        resetAdditionalSpacing = 2
 
         let headerHeight: CGFloat = showsModel ? 25 : 16
         let captionHeight: CGFloat = 12
@@ -216,7 +219,7 @@ private struct MediumWidgetMetrics {
         gaugeDiameter = max(32, min(columnWidth * 0.70, size.height - reservedHeight, 104))
         gaugeTextSize = gaugeDiameter * 0.30
         dividerHeight = gaugeDiameter + captionHeight + labelGaugeSpacing
-        columnHeight = gaugeDiameter + (captionHeight + labelGaugeSpacing) * 2
+        columnHeight = gaugeDiameter + (captionHeight + labelGaugeSpacing) * 2 + resetAdditionalSpacing
 
         // Distância até Contexto
         columnsBottomSpacing = 4

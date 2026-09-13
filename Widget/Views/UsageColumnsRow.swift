@@ -8,6 +8,7 @@ struct UsageColumnsRow: View {
     let columnSpacing: CGFloat
     let gaugeDiameter: CGFloat
     let labelSpacing: CGFloat
+    let resetAdditionalSpacing: CGFloat
     let gaugeTextSize: CGFloat
     let dividerHeight: CGFloat
     let columnHeight: CGFloat
@@ -17,7 +18,7 @@ struct UsageColumnsRow: View {
             UsageColumnView(
                 title: "SESSÃO · 5H", rateLimit: snapshot.fiveHour,
                 referenceDate: referenceDate, remainingUnit: .hours,
-                gaugeDiameter: gaugeDiameter, labelSpacing: labelSpacing, gaugeTextSize: gaugeTextSize
+                gaugeDiameter: gaugeDiameter, labelSpacing: labelSpacing, resetAdditionalSpacing: resetAdditionalSpacing, gaugeTextSize: gaugeTextSize
             )
             .frame(height: columnHeight, alignment: .top)
             Rectangle()
@@ -26,7 +27,7 @@ struct UsageColumnsRow: View {
             UsageColumnView(
                 title: "SEMANAL · 7D", rateLimit: snapshot.sevenDay,
                 referenceDate: referenceDate, remainingUnit: .days,
-                gaugeDiameter: gaugeDiameter, labelSpacing: labelSpacing, gaugeTextSize: gaugeTextSize
+                gaugeDiameter: gaugeDiameter, labelSpacing: labelSpacing, resetAdditionalSpacing: resetAdditionalSpacing, gaugeTextSize: gaugeTextSize
             )
             .frame(height: columnHeight, alignment: .top)
         }
@@ -43,6 +44,7 @@ struct UsageColumnView: View {
     let remainingUnit: RemainingUnit
     let gaugeDiameter: CGFloat
     let labelSpacing: CGFloat
+    let resetAdditionalSpacing: CGFloat
     let gaugeTextSize: CGFloat
 
     private var usedText: String {
@@ -91,6 +93,7 @@ struct UsageColumnView: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
+                    .padding(.top, resetAdditionalSpacing)
                     .frame(maxWidth: .infinity)
                     .multilineTextAlignment(.center)
 

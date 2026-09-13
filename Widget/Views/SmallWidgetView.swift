@@ -136,6 +136,7 @@ struct SmallWidgetView: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.72)
+                .padding(.top, metrics.resetAdditionalSpacing)
         }
         .frame(
             maxWidth: .infinity,
@@ -201,6 +202,7 @@ private struct SmallWidgetMetrics {
     let gaugeDiameter: CGFloat
     let gaugeTextSize: CGFloat
     let verticalSpacing: CGFloat
+    let resetAdditionalSpacing: CGFloat
     let headerBottomSpacing: CGFloat
 
     init(size: CGSize) {
@@ -212,6 +214,7 @@ private struct SmallWidgetMetrics {
 
         padding = side * 0.06
         verticalSpacing = 3
+        resetAdditionalSpacing = 2
         headerBottomSpacing = 4
         let headerHeight: CGFloat = 16
         let captionHeight: CGFloat = 12
