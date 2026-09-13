@@ -112,7 +112,29 @@ A correção está registrada em `0089808`, incluindo o mesmo padrão no menu;
 as ferramentas em `e08174a`. Esses commits posteriores à investigação foram
 preservados. Não houve reescrita de histórico ou alterações em credenciais.
 
-O defeito visual reproduzido foi corrigido. Permanecem como manutenção separada
-a organização das instalações duplicadas e a redução das plataformas do template.
+O defeito visual reproduzido foi corrigido. A organização das instalações foi
+concluída separadamente, conforme o registro abaixo. Permanece como manutenção
+separada a redução das plataformas do template.
 Login OAuth vencido continua sendo um problema distinto de coleta, sinalizado
 pelo app; não deve ser confundido com falha de renderização.
+
+## Consolidação das instalações — 13/09/2026
+
+- Instalação de uso diário: `~/Applications/ClaudeUsage.app`, com a build mais
+  recente validada por `codesign --verify --deep --strict`.
+- As três cópias registradas anteriormente foram arquivadas em
+  `~/Library/Application Support/ClaudeUsage/InstallationBackups/2026-09-13/`.
+  Os ZIPs `xcode-installed.zip`, `review-build.zip` e `layout-build.zip` passaram
+  por `unzip -tq` antes da remoção dos bundles duplicados.
+- Foram retirados os registros dessas três cópias do PlugInKit e LaunchServices;
+  somente seus bundles `.app` foram removidos. Código-fonte, demais produtos de
+  build, App Group, preferências, dados e credenciais foram preservados.
+- PlugInKit passou de três registros para um, apontando para `~/Applications`.
+  O app foi reaberto a partir desse caminho estável.
+
+Para uso diário, abra a instalação em `~/Applications`. `Cmd+R` no Xcode executa
+uma build de desenvolvimento separada e pode registrá-la novamente. Ao validar
+uma versão nova, substitua a instalação estável com o app encerrado, confira a
+assinatura e retire apenas o registro/bundle de desenvolvimento que não será
+mais usado. Não limpe caches globais do WidgetKit nem restaure ZIPs de backup
+como instalações paralelas.
