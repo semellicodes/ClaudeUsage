@@ -1,9 +1,23 @@
+# macOS
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# Xcode
 DerivedData/
 build/
-.build/
 xcuserdata/
 *.xcuserstate
+*.xcscmblueprint
+*.xccheckout
+*.moved-aside
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# Project-specific
 *.log
 *.tmp
 backups/

@@ -1,60 +1,104 @@
-# ClaudeUsage
+# Claude Usage
 
-Utilitário macOS com menu e widgets para acompanhar os limites de 5h e 7d da conta Claude, usada no Desktop e no terminal. Sem servidor próprio, telemetria ou dependências externas.
+A native macOS app that shows your Claude / Claude Code usage in the menu bar and as WidgetKit widgets — 5-hour session limits, 7-day limits, and time until reset, without leaving the desktop.
 
-## Sincronização da conta
+## Features
 
-No menu do ClaudeUsage, ative **Sincronizar Desktop e terminal**. A opção começa desativada e explica o acesso: o app lê o login do Claude Code no Chaves (ou o arquivo de credenciais quando o item não existe) e envia o token somente para `GET https://api.anthropic.com/api/oauth/usage`. O macOS pode pedir permissão ao Chaves ao conectar ou atualizar manualmente. Consultas em segundo plano não abrem pedidos de acesso.
+- **macOS menu bar app** built with `MenuBarExtra`, showing 5-hour and 7-day usage percentages, remaining percentage, and reset countdown.
+- **WidgetKit widgets** in Small and Medium sizes, addable to the desktop or Notification Center.
+- **5-hour session usage** and **7-day usage**, each shown independently — a missing window is displayed as "not available," never as 0%.
+- **Countdown until reset** for each rate-limit window.
+- **Per-model widget configuration** (Automatic / Sonnet / Opus) via a configurable widget (`WidgetSelectionIntent`), when the account reports per-model weekly limits.
+- **Context window usage** (input/output tokens, used percentage) shown separately from rate limits, sourced from the local `statusLine` collector.
+- **Shared data between the app and the widgets** through an App Group, so widgets render from the last known snapshot without requiring the app to be open.
+- **Automatic widget updates**: the app reloads widget timelines (`WidgetCenter.reloadTimelines`) whenever a new usage snapshot is saved.
+- Native SwiftUI throughout, no external dependencies.
 
-Use a mesma conta no Desktop e no Claude Code. Com o login válido e a sincronização ativada, o app consulta a conta a cada cinco minutos enquanto estiver aberto, sem precisar enviar mensagens no terminal. A consulta não envia prompts. WidgetKit controla quando a nova leitura aparece no desktop.
+## Screenshots
 
-O endpoint pertence à Anthropic, mas não possui contrato público estável para aplicativos de terceiros. A integração segue o protocolo descrito pelo [CodexBar](https://github.com/steipete/CodexBar/blob/main/docs/claude.md), sem incorporar seu código ou dependências. Alterações no serviço podem exigir manutenção.
+_Add screenshots to `docs/screenshots/` and reference them here, for example:_
 
-Se o login expirar ou não tiver o escopo `user:profile`, execute `claude auth login` no Terminal e depois clique em **Atualizar agora**. O app relê o login a cada consulta; não renova tokens nem altera credenciais do Claude Code. A leitura real depende do login válido e da aceitação pelo servidor. Uma chave da Claude API não substitui esse login.
-
-Falhas preservam a última leitura com sua data original. Há espera progressiva de cinco minutos até uma hora, respeitando `Retry-After`. O horário permitido para uma nova tentativa persiste entre reinícios e reconexões. Atualizações manuais têm intervalo mínimo de um minuto; erros de login permitem tentar novamente após 30 segundos.
-
-O widget sinaliza login vencido ou falha de atualização sem alterar os percentuais guardados. O menu e o ícone usam uma agenda própria de eventos futuros, sem `TimelineView` no `MenuBarExtra`, evitando ciclos de renderização quando uma janela vence.
-
-Segundo a [documentação de statusLine](https://code.claude.com/docs/en/statusline), `five_hour` e `seven_day` são opcionais e independentes. Ausência não significa 0% usado nem bloqueio. A janela curta é de **5 horas**, não de 24 horas. Depois do reset, o percentual anterior deixa de ser apresentado como atual; é necessária uma nova leitura para conhecer o uso.
-
-## Modelo e contexto
-
-Os widgets antigos continuam no tipo **Claude Usage**, com seleção automática. Para escolher Sonnet/Opus ou a janela do widget pequeno, adicione **Claude Usage · Modelos**. Os dois tipos compartilham o mesmo snapshot e são atualizados pelo app. Identificadores distintos preservam instalações antigas que não possuem configuração de modelo salva.
-
-A galeria usa dados de demonstração apenas na prévia. Os widgets adicionados ao desktop sempre usam o armazenamento real; ausência de dados continua aparecendo como ausência.
-
-Ambas as configurações preservam o fundo com `containerBackgroundRemovable(false)`, evitando que o sistema remova a superfície que dá contraste ao conteúdo. Ao diagnosticar um widget vazio, confirme também a apresentação no desktop: uma timeline concluída com sucesso não comprova que o host desenhou o conteúdo. O erro 1103 é distinto e indica um pedido sem intent enviado a uma configuração que o exige; o tipo legado continua usando `StaticConfiguration` para aceitar esses pedidos.
-
-A API pode retornar `utilization: 0` com `resets_at: null` após liberar uma janela. O app preserva os 0% informados e apresenta “Reinício não informado” até receber uma data; não inventa uma contagem regressiva nem descarta o limite semanal.
-
-Em **Editar Widget**, escolha automático, Sonnet ou Opus. A janela de 5h é compartilhada. O semanal usa `seven_day_sonnet` ou `seven_day_opus` quando informado; caso contrário, usa o geral `seven_day`. A seleção não troca o modelo no Claude. O widget pequeno permite escolher 5h ou 7d.
-
-A API da conta não fornece o contexto de uma conversa. Na sincronização da conta, o contexto fica ausente para evitar apresentar uma leitura antiga do terminal como se fosse da conversa no Desktop. Desativando a sincronização, o coletor `statusLine` continua disponível para limites e contexto do terminal.
-
-## Fonte local opcional
-
-Configure `statusLine` para executar `Tools/claude-usage-statusline.sh` por caminho absoluto, preservando as outras configurações do Claude Code. Abra o Claude Code no terminal e envie uma mensagem. O script escreve o JSON atomicamente; o app converte e compartilha apenas o snapshot sanitizado com o widget.
-
-Para verificar a data de escrita e a presença dos campos, sem imprimir o payload:
-
-```sh
-zsh Tools/diagnose-statusline.sh
+```
+docs/screenshots/menu-bar.png
+docs/screenshots/widget-small.png
+docs/screenshots/widget-medium.png
+docs/screenshots/widget-models.png
 ```
 
-O diagnóstico não substitui a validação do mapper: presença de campos numéricos não garante que os valores sejam válidos. `CLAUDE_USAGE_STATUS_DIR` permite executar os scripts com uma pasta isolada nos testes.
+## Requirements
 
-Esse diagnóstico verifica somente o arquivo local. O status da conexão da conta aparece no menu do app. O Desktop não executou o coletor local nas sessões observadas; por isso ele deixou de ser a única fonte.
+- macOS 26.5 or later
+- Xcode 26.6 or later
+- Swift 6
 
-## Privacidade
+## Installation / Build
 
-O token nunca é gravado pelo ClaudeUsage nem compartilhado com widgets. Requisições usam sessão efêmera, sem cookies/cache e sem seguir redirecionamentos. Não há scraping, leitura de conversas, API key ou telemetria. Só o snapshot sanitizado é persistido no App Group.
+1. Clone the repository:
+   ```sh
+   git clone <this-repository-url>
+   cd ClaudeUsage
+   ```
+2. Open `ClaudeUsage.xcodeproj` in Xcode.
+3. In **Signing & Capabilities**, select your own Apple Developer Team for both the `ClaudeUsage` and `ClaudeUsageWidgetExtension` targets.
+4. Update the **App Group** identifier on both targets (see below) so it is unique to your Team ID, and update the matching identifier in:
+   - `App/ClaudeUsageApp.swift`
+   - `Widget/UsageTimelineProvider.swift`
+5. Build and run the `ClaudeUsage` scheme (`Cmd+R`). The app runs as a menu bar utility (no Dock icon).
+6. Add a widget from the macOS widget gallery, searching for "Claude Usage."
 
-## Validação
+To get usage data flowing:
+
+- **Account sync (recommended):** open the app's menu, enable "Sync Desktop and terminal." This reads the existing Claude Code OAuth login from the Keychain and queries `GET https://api.anthropic.com/api/oauth/usage` only — no API key, no message sending. Requires `claude auth login` to have been run at least once in Claude Code.
+- **Local statusLine (optional):** point Claude Code's `statusLine` at `Tools/claude-usage-statusline.sh` (absolute path) to also capture context-window usage from the terminal. See the "Fonte local opcional" section in the code comments and `Tools/diagnose-statusline.sh` for a read-only diagnostic.
+
+Validate a build with:
 
 ```sh
 swift test --package-path Packages/ClaudeUsageCore
 xcodebuild -project ClaudeUsage.xcodeproj -scheme ClaudeUsage -destination 'platform=macOS' build
 ```
 
-Os testes usam transporte simulado e credenciais fictícias; não acessam o Chaves nem a rede. Cobrem o contrato da conta, zero/ausência de uso, datas, limites por modelo, persistência, erros de autenticação/HTTP e espera do servidor, além do fluxo shell → arquivo → mapper → store. O scheme do aplicativo não possui target de testes; os testes ficam no pacote Swift. Testes simulados não comprovam acesso de uma conta real ao endpoint.
+## App Group
+
+The app and the Widget Extension are separate processes/sandboxes. Sharing a `UsageSnapshot` between them requires an [App Group](https://developer.apple.com/documentation/xcode/configuring-app-groups):
+
+```
+App (menu bar)
+  → writes UsageSnapshot to SharedUsageStore (UserDefaults(suiteName:))
+    → App Group container
+      → Widget Extension reads the same snapshot in its TimelineProvider
+```
+
+This repository's App Group identifier is tied to the original developer's Team ID. When building your own copy, use your own identifier, for example:
+
+```
+group.your.bundle.identifier
+```
+
+and make sure the entitlements of both targets and the identifier hardcoded in `ClaudeUsageApp.swift` / `UsageTimelineProvider.swift` all match.
+
+## Architecture
+
+The project follows a pragmatic Clean Architecture split, shared between the app and the widget:
+
+- **Domain** (`Packages/ClaudeUsageCore/.../Domain`) — `RateLimit`, `ContextUsage`, `UsageSnapshot`. No SwiftUI, WidgetKit, or I/O knowledge.
+- **Data / Mapper** (`.../Data`) — DTOs for the account API and the local `statusLine` JSON, and `ClaudeStatusMapper` / `ClaudeAccountPayload`, the only boundary that turns raw, untrusted JSON into validated Domain models (finite numbers, clamped percentages, no invented data).
+- **Persistence** (`.../Persistence`) — `SharedUsageStore` (App Group–backed) and `ClaudeOAuthCredentials` (Keychain read for the existing Claude Code login).
+- **App** (`App/`) — `MenuBarExtra` scene, `MenuBarViewModel`, and `StatusFileMonitor` (watches the local status file).
+- **Widget Extension** (`Widget/`) — `TimelineProvider`, `WidgetSelectionIntent`, and the SwiftUI views for the Small/Medium widgets.
+
+`ClaudeUsageCore` is the single source of truth for models and validation; both targets depend on it instead of duplicating logic.
+
+```mermaid
+flowchart LR
+    A[Claude account API /\nlocal statusLine] --> B[Mapper]
+    B --> C[Domain models]
+    C --> D[SharedUsageStore\nApp Group]
+    D --> E[macOS menu bar app]
+    D --> F[Widget TimelineProvider]
+    F --> G[Widget views]
+```
+
+## Privacy
+
+No API keys, telemetry, or analytics. The OAuth token is read from the Keychain at request time and never persisted by this app or shared with the widget. Only a sanitized `UsageSnapshot` (percentages, reset dates) crosses the App Group — never raw payload fields like `cwd` or `transcript_path`.
