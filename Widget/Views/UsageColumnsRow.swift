@@ -69,7 +69,7 @@ struct UsageColumnView: View {
                     ),
                     valueText: usedText,
                     valueFont: .system(
-                        size: 20,
+                        size: 17,
                         weight: .bold,
                         design: .rounded
                     )
@@ -77,15 +77,7 @@ struct UsageColumnView: View {
 
                 Group {
                     if let reset = rateLimit.resetsAt {
-                        HStack(spacing: 3) {
-                            Text("reset em")
-                            if remainingUnit == .hours {
-                                Text(timerInterval: referenceDate...reset, countsDown: true)
-                                    .monospacedDigit()
-                            } else {
-                                Text(durationText(from: referenceDate, to: reset, unit: remainingUnit))
-                            }
-                        }
+                        ResetCountdownView(referenceDate: referenceDate, resetsAt: reset, unit: remainingUnit)
                     } else {
                         Text("Reinício não informado")
                     }

@@ -113,9 +113,10 @@ struct SmallWidgetView: View {
                 color: usageColor(for: rateLimit.usedPercentage),
                 valueText: "\(percentages.used)%",
                 valueFont: .system(
-                    .title,
+                    size: 20,
+                    weight: .bold,
                     design: .rounded
-                ).bold()
+                )
             )
 
             Text("\(percentages.remaining)% restante")
@@ -126,15 +127,7 @@ struct SmallWidgetView: View {
 
             Group {
                 if let reset = rateLimit.resetsAt {
-                    HStack(spacing: 3) {
-                        Text("reset em")
-                        if unit == .hours {
-                            Text(timerInterval: entry.date...reset, countsDown: true)
-                                .monospacedDigit()
-                        } else {
-                            Text(durationText(from: entry.date, to: reset, unit: unit))
-                        }
-                    }
+                    ResetCountdownView(referenceDate: entry.date, resetsAt: reset, unit: unit)
                 } else {
                     Text("Reinício não informado")
                 }

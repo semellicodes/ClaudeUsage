@@ -34,6 +34,6 @@ func durationText(from now: Date, to resetsAt: Date, unit: RemainingUnit) -> Str
         return "\(hours)h \(minutes)min"
     case .days:
         let days = max(Calendar.current.dateComponents([.day], from: now, to: resetsAt).day ?? 0, 0)
-        return "\(days) dias"
+        return "\(days) \(days == 1 ? "dia" : "dias")"
     }
 }

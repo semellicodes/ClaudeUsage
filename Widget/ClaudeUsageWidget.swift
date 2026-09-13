@@ -53,14 +53,15 @@ private struct ClaudeUsageWidgetEntryView: View {
 
     var body: some View {
 
-        switch family {
-
-        case .systemMedium:
-            MediumWidgetView(entry: entry)
-
-        default:
-            SmallWidgetView(entry: entry)
+        Group {
+            switch family {
+            case .systemMedium:
+                MediumWidgetView(entry: entry)
+            default:
+                SmallWidgetView(entry: entry)
+            }
         }
+        .environment(\.locale, Locale(identifier: "pt_BR"))
     }
 }
 
