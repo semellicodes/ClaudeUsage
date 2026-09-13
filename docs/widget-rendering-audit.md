@@ -135,9 +135,15 @@ pelo app; não deve ser confundido com falha de renderização.
 - PlugInKit passou de três registros para um, apontando para `~/Applications`.
   O app foi reaberto a partir desse caminho estável.
 
-Para uso diário, abra a instalação em `~/Applications`. `Cmd+R` no Xcode executa
-uma build de desenvolvimento separada e pode registrá-la novamente. Ao validar
-uma versão nova, substitua a instalação estável com o app encerrado, confira a
-assinatura e retire apenas o registro/bundle de desenvolvimento que não será
-mais usado. Não limpe caches globais do WidgetKit nem restaure ZIPs de backup
-como instalações paralelas.
+O fluxo foi posteriormente automatizado com os build settings nativos do Xcode:
+Debug e Release geram o app diretamente em `~/Applications`, e o scheme principal
+encerra a instância anterior antes do build. Cmd+R abre esse mesmo produto.
+Builds Debug/test e Release foram executados com o mesmo destino; PlugInKit
+permaneceu com um único registro. Os 38 testes passaram. A configuração efetiva
+de Archive continua usando a área de staging fornecida pelo Xcode.
+
+Cmd+B/Cmd+U deixam o app encerrado; reabra a instalação ao terminar. Clean pode
+remover esse bundle por ser o produto do build, mas não remove os dados do App
+Group. Consulte o README para builds isolados com override de `DSTROOT`.
+Não limpe caches globais do WidgetKit nem restaure ZIPs de backup como instalações
+paralelas.

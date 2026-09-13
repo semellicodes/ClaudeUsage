@@ -41,7 +41,7 @@ Additional screenshots (e.g. the per-model widget configuration) can be added la
 4. Update the **App Group** identifier on both targets (see below) so it is unique to your Team ID, and update the matching identifier in:
    - `App/ClaudeUsageApp.swift`
    - `Widget/UsageTimelineProvider.swift`
-5. Build and run the `ClaudeUsage` scheme (`Cmd+R`). The app runs as a menu bar utility (no Dock icon).
+5. Build and run the `ClaudeUsage` scheme (`Cmd+R`). The app runs as a menu bar utility (no Dock icon), installed at `~/Applications/ClaudeUsage.app`.
 6. Add a widget from the macOS widget gallery, searching for "Claude Usage."
 
 To get usage data flowing:
@@ -67,6 +67,30 @@ xcodebuild -project ClaudeUsage.xcodeproj -scheme ClaudeUsage -destination 'plat
 
 `swift test --package-path Packages/ClaudeUsageCore` remains available for testing
 the package independently.
+
+### One local installation
+
+Debug and Release builds of the app use Xcode's native deployment settings
+(`DEPLOYMENT_LOCATION=YES`, `DSTROOT=$(HOME)`, `INSTALL_PATH=/Applications`).
+The product is built directly at `~/Applications/ClaudeUsage.app`; changing
+DerivedData directories does not create another installed app. The extension
+is embedded in that same bundle. Xcode supplies its own staging root for Archive.
+
+The main scheme stops the previous `ClaudeUsage` process before building.
+`Cmd+R` builds and launches that same installation; `Cmd+B` and `Cmd+U` leave
+the app stopped, so reopen `~/Applications/ClaudeUsage.app` when finished.
+Because the installed app is the build product, Xcode Clean can remove it;
+building again recreates it. Account data remains in its separate App Group.
+
+For CI or isolated builds, override `DSTROOT` with a temporary directory.
+Do not run that temporary app as a second daily installation. This setup does
+not remove manually copied apps or prevent explicit build-setting overrides.
+
+To confirm which extension is registered:
+
+```sh
+pluginkit -m -A -D -v -i com.paula.ClaudeUsage.ClaudeUsageWidget
+```
 
 ## App Group
 
