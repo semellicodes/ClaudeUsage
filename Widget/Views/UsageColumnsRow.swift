@@ -82,7 +82,6 @@ struct UsageColumnView: View {
                             if remainingUnit == .hours {
                                 Text(timerInterval: referenceDate...reset, countsDown: true)
                                     .monospacedDigit()
-                                    .fixedSize()
                             } else {
                                 Text(durationText(from: referenceDate, to: reset, unit: remainingUnit))
                             }

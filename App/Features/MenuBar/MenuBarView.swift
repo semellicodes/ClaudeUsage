@@ -81,7 +81,7 @@ private struct RateLimitRow: View {
                             HStack(spacing: 3) {
                                 Text("Reinicia em")
                                 Text(timerInterval: referenceDate...reset, countsDown: true)
-                                    .monospacedDigit().fixedSize()
+                                    .monospacedDigit()
                             }
                         } else {
                             Text("Data de reinício ainda não informada")

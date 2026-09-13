@@ -131,7 +131,6 @@ struct SmallWidgetView: View {
                         if unit == .hours {
                             Text(timerInterval: entry.date...reset, countsDown: true)
                                 .monospacedDigit()
-                                .fixedSize()
                         } else {
                             Text(durationText(from: entry.date, to: reset, unit: unit))
                         }
