@@ -16,26 +16,24 @@ A native macOS app that shows your Claude / Claude Code usage in the menu bar an
 
 ## Screenshots
 
-_Add screenshots to `docs/screenshots/` and reference them here, for example:_
+| Menu bar | Small widget | Medium widget |
+| --- | --- | --- |
+| ![Menu bar dropdown](docs/screenshots/menu-bar.png) | ![Small widget](docs/screenshots/widget-small.png) | ![Medium widget](docs/screenshots/widget-medium.png) |
 
-```
-docs/screenshots/menu-bar.png
-docs/screenshots/widget-small.png
-docs/screenshots/widget-medium.png
-docs/screenshots/widget-models.png
-```
+Additional screenshots (e.g. the per-model widget configuration) can be added later under `docs/screenshots/`.
 
 ## Requirements
 
 - macOS 26.5 or later
-- Xcode 26.6 or later
-- Swift 6
+- Xcode 26.6 or later (ships the Swift 6 toolchain)
+
+`ClaudeUsageCore` declares `swift-tools-version: 6.0`. The `ClaudeUsage` and `ClaudeUsageWidgetExtension` app targets build with `SWIFT_VERSION = 5.0` (Swift 5 language mode) under that same toolchain — the project is not running the whole app in Swift 6 strict-concurrency language mode.
 
 ## Installation / Build
 
 1. Clone the repository:
    ```sh
-   git clone <this-repository-url>
+   git clone https://github.com/semellicodes/ClaudeUsage.git
    cd ClaudeUsage
    ```
 2. Open `ClaudeUsage.xcodeproj` in Xcode.
@@ -62,16 +60,16 @@ xcodebuild -project ClaudeUsage.xcodeproj -scheme ClaudeUsage -destination 'plat
 
 The app and the Widget Extension are separate processes/sandboxes. Sharing a `UsageSnapshot` between them requires an [App Group](https://developer.apple.com/documentation/xcode/configuring-app-groups):
 
-```
+```text
 App (menu bar)
-  → writes UsageSnapshot to SharedUsageStore (UserDefaults(suiteName:))
-    → App Group container
-      → Widget Extension reads the same snapshot in its TimelineProvider
+  -> writes UsageSnapshot to SharedUsageStore (UserDefaults(suiteName:))
+    -> App Group container
+      -> Widget Extension reads the same snapshot in its TimelineProvider
 ```
 
 This repository's App Group identifier is tied to the original developer's Team ID. When building your own copy, use your own identifier, for example:
 
-```
+```text
 group.your.bundle.identifier
 ```
 
@@ -91,14 +89,18 @@ The project follows a pragmatic Clean Architecture split, shared between the app
 
 ```mermaid
 flowchart LR
-    A[Claude account API /\nlocal statusLine] --> B[Mapper]
-    B --> C[Domain models]
-    C --> D[SharedUsageStore\nApp Group]
-    D --> E[macOS menu bar app]
-    D --> F[Widget TimelineProvider]
-    F --> G[Widget views]
+    A["Claude account API<br/>or local statusLine"] --> B["Mapper"]
+    B --> C["Domain models"]
+    C --> D["SharedUsageStore<br/>App Group"]
+    D --> E["macOS menu bar app"]
+    D --> F["Widget TimelineProvider"]
+    F --> G["Widget views"]
 ```
 
 ## Privacy
 
 No API keys, telemetry, or analytics. The OAuth token is read from the Keychain at request time and never persisted by this app or shared with the widget. Only a sanitized `UsageSnapshot` (percentages, reset dates) crosses the App Group — never raw payload fields like `cwd` or `transcript_path`.
+
+## License
+
+[MIT](LICENSE)
