@@ -20,7 +20,7 @@ A native macOS app that shows your Claude / Claude Code usage in the menu bar an
 | --- | --- | --- |
 | ![Menu bar dropdown](docs/screenshots/menu-bar.png) | ![Small widget](docs/screenshots/widget-small.png) | ![Medium widget](docs/screenshots/widget-medium.png) |
 
-Additional screenshots (e.g. the per-model widget configuration) can be added later under `docs/screenshots/`.
+Current macOS interface in Brazilian Portuguese, showing account usage in the menu bar and both widget sizes.
 
 ## Requirements
 
