@@ -56,6 +56,18 @@ swift test --package-path Packages/ClaudeUsageCore
 xcodebuild -project ClaudeUsage.xcodeproj -scheme ClaudeUsage -destination 'platform=macOS' build
 ```
 
+To run the Core tests from Xcode, select the **ClaudeUsage** scheme and press
+**Cmd+U**. Its shared `ClaudeUsage.xctestplan` runs the existing
+`ClaudeUsageCoreTests` package target and fixtures; no tests are duplicated.
+The equivalent command is:
+
+```sh
+xcodebuild -project ClaudeUsage.xcodeproj -scheme ClaudeUsage -destination 'platform=macOS' test
+```
+
+`swift test --package-path Packages/ClaudeUsageCore` remains available for testing
+the package independently.
+
 ## App Group
 
 The app and the Widget Extension are separate processes/sandboxes. Sharing a `UsageSnapshot` between them requires an [App Group](https://developer.apple.com/documentation/xcode/configuring-app-groups):

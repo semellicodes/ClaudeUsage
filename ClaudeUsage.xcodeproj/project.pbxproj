@@ -37,6 +37,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FD0E140B9A7F46FC93CE0123 /* ClaudeUsageCore */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Packages/ClaudeUsageCore; sourceTree = "<group>"; };
 		DAA912853053A3BA0039F2CC /* ClaudeUsage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClaudeUsage.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EE12CD9854F5E01A547B7C9F /* ClaudeUsageWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ClaudeUsageWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -91,6 +92,7 @@
 			isa = PBXGroup;
 			children = (
 				DAA912873053A3BA0039F2CC /* App */,
+				FD0E140B9A7F46FC93CE0123 /* ClaudeUsageCore */,
 				660F2EAD7E7DD8AC0ACDDE60 /* Widget */,
 				DAA912863053A3BA0039F2CC /* Products */,
 			);

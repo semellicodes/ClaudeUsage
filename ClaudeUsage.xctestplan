@@ -1,0 +1,20 @@
+{
+  "configurations" : [
+    {
+      "id" : "CAFE1320-2CC7-4D22-9901-EB606649F153",
+      "name" : "Core",
+      "options" : {}
+    }
+  ],
+  "defaultOptions" : {},
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Packages/ClaudeUsageCore",
+        "identifier" : "ClaudeUsageCoreTests",
+        "name" : "ClaudeUsageCoreTests"
+      }
+    }
+  ],
+  "version" : 1
+}
