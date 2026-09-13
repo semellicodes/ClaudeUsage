@@ -7,8 +7,7 @@ struct MediumWidgetView: View {
     let entry: UsageEntry
 
     var body: some View {
-        GeometryReader { geo in
-            let metrics = MediumWidgetMetrics(size: geo.size)
+            let metrics = MediumWidgetMetrics(size: entry.displaySize)
 
             VStack(spacing: 0) {
 
@@ -68,9 +67,17 @@ struct MediumWidgetView: View {
                 maxHeight: .infinity,
                 alignment: .topLeading
             )
-        }
         .containerBackground(for: .widget) {
             WidgetBackground()
+        }
+        .overlay(alignment: .bottom) {
+            if let message = entry.syncMessage {
+                Text(message)
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(.orange)
+                    .lineLimit(1)
+                    .padding(.bottom, 5)
+            }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(

@@ -8,9 +8,7 @@ struct SmallWidgetView: View {
 
     var body: some View {
 
-        GeometryReader { geo in
-
-            let metrics = SmallWidgetMetrics(size: geo.size)
+            let metrics = SmallWidgetMetrics(size: entry.displaySize)
 
             VStack(spacing: 0) {
 
@@ -45,7 +43,13 @@ struct SmallWidgetView: View {
                     maxWidth: .infinity,
                     maxHeight: .infinity
                 )
-                if let capturedAt = entry.snapshot?.capturedAt {
+                if let message = entry.syncMessage {
+                    Text(message)
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(.orange)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.75)
+                } else if let capturedAt = entry.snapshot?.capturedAt {
                     Text(capturedAt, format: .dateTime.day().month().hour().minute())
                         .font(.system(size: 8))
                         .foregroundStyle(.secondary)
@@ -58,7 +62,6 @@ struct SmallWidgetView: View {
                 maxHeight: .infinity,
                 alignment: .topLeading
             )
-        }
         .containerBackground(for: .widget) {
             WidgetBackground()
         }

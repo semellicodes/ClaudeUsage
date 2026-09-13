@@ -16,7 +16,8 @@ struct ClaudeUsageApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuBarView(snapshot: viewModel.snapshot, storageError: viewModel.storageError)
+            MenuBarView(snapshot: viewModel.snapshot, referenceDate: viewModel.presentationDate,
+                        storageError: viewModel.storageError)
             Divider()
             VStack(alignment: .leading, spacing: 8) {
                 Toggle("Sincronizar Desktop e terminal", isOn: Binding(
@@ -24,12 +25,10 @@ struct ClaudeUsageApp: App {
                 ))
                 if viewModel.accountEnabled {
                     Text("Consulta a conta a cada 5 minutos enquanto o ClaudeUsage estiver aberto.")
-                    TimelineView(.periodic(from: .now, by: 1)) { timeline in
                         Button(viewModel.isRefreshing ? "Atualizando…" : "Atualizar agora") {
                             viewModel.refreshNow()
                         }
-                        .disabled(viewModel.isRefreshing || (viewModel.nextAttempt ?? .distantPast) > timeline.date)
-                    }
+                        .disabled(viewModel.isRefreshing || (viewModel.nextAttempt ?? .distantPast) > viewModel.presentationDate)
                     if let message = viewModel.accountMessage { Text(message).foregroundStyle(.orange) }
                     if let next = viewModel.nextAttempt, next > Date() {
                         Text("Atualização manual liberada às \(next.formatted(date: .omitted, time: .shortened))")
@@ -43,7 +42,7 @@ struct ClaudeUsageApp: App {
             .padding(14)
             .frame(width: 340, alignment: .leading)
         } label: {
-            MenuBarLabel(snapshot: viewModel.snapshot)
+            MenuBarLabel(snapshot: viewModel.snapshot, referenceDate: viewModel.presentationDate)
         }
         .menuBarExtraStyle(.window)
     }

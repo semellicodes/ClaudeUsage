@@ -5,13 +5,13 @@ import ClaudeUsageCore
 /// independentemente quando presente — perder uma janela não quebra o layout.
 struct MenuBarView: View {
     let snapshot: UsageSnapshot?
+    var referenceDate = Date()
     var storageError: String? = nil
 
     var body: some View {
-        TimelineView(.explicit(resetDates(for: snapshot))) { timeline in
             VStack(alignment: .leading, spacing: 10) {
                 if let snapshot {
-                    content(for: snapshot, at: timeline.date)
+                    content(for: snapshot, at: referenceDate)
                 } else {
                     Text("Ative a sincronização da conta para carregar os limites de uso.")
                         .font(.callout)
@@ -29,7 +29,6 @@ struct MenuBarView: View {
             }
             .padding(14)
             .frame(minWidth: 280, maxWidth: 340, alignment: .leading)
-        }
     }
 
     @ViewBuilder
@@ -120,23 +119,13 @@ private struct ContextRow: View {
 /// Label compacto na barra de menus. Curto, e nunca chama rate-limit de "tokens".
 struct MenuBarLabel: View {
     let snapshot: UsageSnapshot?
+    var referenceDate = Date()
 
     var body: some View {
-        TimelineView(.explicit(resetDates(for: snapshot))) { timeline in
-            if let fiveHour = snapshot?.fiveHour, !fiveHour.hasReset(at: timeline.date) {
+            if let fiveHour = snapshot?.fiveHour, !fiveHour.hasReset(at: referenceDate) {
                 Label("\(Int(fiveHour.usedPercentage.rounded()))%", systemImage: "gauge.medium")
             } else {
                 Image(systemName: "gauge.medium")
             }
-        }
     }
-}
-
-/// Atualiza a apresentação no reset sem reler arquivos nem fazer polling.
-private func resetDates(for snapshot: UsageSnapshot?) -> [Date] {
-    // A agenda precisa ser estável: incluir Date() recria um evento imediato
-    // a cada renderização e pode prender o MenuBarExtra num ciclo de updates.
-    [snapshot?.fiveHour?.resetsAt, snapshot?.sevenDay?.resetsAt]
-        .compactMap { $0 }
-        .sorted()
 }

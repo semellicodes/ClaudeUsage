@@ -24,6 +24,19 @@ private let sampleSnapshot = UsageSnapshot(
 @Suite("SharedUsageStore")
 struct SharedUsageStoreTests {
 
+    @Test("Falha de login é compartilhada sem alterar a leitura e some após sucesso")
+    func synchronizationIssue() throws {
+        try withIsolatedStore { store, suite in
+            try store.save(sampleSnapshot)
+            store.setSyncIssue(.authenticationRequired)
+            let reader = try #require(SharedUsageStore(appGroupIdentifier: suite))
+            #expect(reader.loadSyncIssue() == .authenticationRequired)
+            #expect(reader.loadLatestSnapshot() == sampleSnapshot)
+            try store.save(sampleSnapshot)
+            #expect(reader.loadSyncIssue() == nil)
+        }
+    }
+
     @Test("seleção de modelo preserva leituras independentes e o automático acompanha a última")
     func modelSnapshots() throws {
         try withIsolatedStore { store, _ in

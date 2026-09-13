@@ -14,9 +14,15 @@ Se o login expirar ou não tiver o escopo `user:profile`, execute `claude auth l
 
 Falhas preservam a última leitura com sua data original. Há espera progressiva de cinco minutos até uma hora, respeitando `Retry-After`. O horário permitido para uma nova tentativa persiste entre reinícios e reconexões. Atualizações manuais têm intervalo mínimo de um minuto; erros de login permitem tentar novamente após 30 segundos.
 
+O widget sinaliza login vencido ou falha de atualização sem alterar os percentuais guardados. O menu e o ícone usam uma agenda própria de eventos futuros, sem `TimelineView` no `MenuBarExtra`, evitando ciclos de renderização quando uma janela vence.
+
 Segundo a [documentação de statusLine](https://code.claude.com/docs/en/statusline), `five_hour` e `seven_day` são opcionais e independentes. Ausência não significa 0% usado nem bloqueio. A janela curta é de **5 horas**, não de 24 horas. Depois do reset, o percentual anterior deixa de ser apresentado como atual; é necessária uma nova leitura para conhecer o uso.
 
 ## Modelo e contexto
+
+Os widgets antigos continuam no tipo **Claude Usage**, com seleção automática. Para escolher Sonnet/Opus ou a janela do widget pequeno, adicione **Claude Usage · Modelos**. Os dois tipos compartilham o mesmo snapshot e são atualizados pelo app. Identificadores distintos preservam instalações antigas que não possuem configuração de modelo salva.
+
+A galeria usa dados de demonstração apenas na prévia. Os widgets adicionados ao desktop sempre usam o armazenamento real; ausência de dados continua aparecendo como ausência.
 
 A API pode retornar `utilization: 0` com `resets_at: null` após liberar uma janela. O app preserva os 0% informados e apresenta “Reinício não informado” até receber uma data; não inventa uma contagem regressiva nem descarta o limite semanal.
 

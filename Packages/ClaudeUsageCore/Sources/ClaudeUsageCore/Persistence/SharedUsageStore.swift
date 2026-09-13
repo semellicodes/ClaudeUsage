@@ -9,6 +9,7 @@ import Foundation
 /// garantia documentada, `@unchecked Sendable` não seria aceitável aqui.
 public struct SharedUsageStore: @unchecked Sendable {
     private static let snapshotKey = "latestUsageSnapshot"
+    private static let syncIssueKey = "usageSyncIssue"
 
     private let userDefaults: UserDefaults
 
@@ -44,6 +45,16 @@ public struct SharedUsageStore: @unchecked Sendable {
         if let model = UsageModel(displayName: snapshot.modelDisplayName) {
             userDefaults.set(data, forKey: Self.snapshotKey + "." + model.rawValue)
         }
+        setSyncIssue(nil)
+    }
+
+    /// Estado técnico separado: falha de atualização não muda capturedAt nem os percentuais.
+    public func setSyncIssue(_ issue: UsageSyncIssue?) {
+        userDefaults.set(issue?.rawValue, forKey: Self.syncIssueKey)
+    }
+
+    public func loadSyncIssue() -> UsageSyncIssue? {
+        userDefaults.string(forKey: Self.syncIssueKey).flatMap(UsageSyncIssue.init(rawValue:))
     }
 
     /// `nil` cobre igualmente: nada gravado ainda, dado corrompido/ilegível,

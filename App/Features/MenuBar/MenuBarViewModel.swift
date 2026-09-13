@@ -8,22 +8,27 @@ import ClaudeUsageCore
 @MainActor
 final class MenuBarViewModel {
     // Precisa bater com `kind` em Widget/ClaudeUsageWidget.swift.
-    private static let widgetKind = "ClaudeUsageWidget"
+    private static let widgetKinds = ["ClaudeUsageWidget", "ClaudeUsageConfigurableWidget"]
     private static let logger = Logger(subsystem: "com.paula.ClaudeUsage", category: "SharedStore")
 
     private(set) var snapshot: UsageSnapshot?
+    private(set) var presentationDate = Date()
     private(set) var storageError: String?
     private(set) var accountEnabled = UserDefaults.standard.bool(forKey: "accountUsageEnabled")
     private(set) var isRefreshing = false
     private(set) var accountMessage: String?
     private(set) var nextAttempt = UserDefaults.standard.object(forKey: "accountNextAttempt") as? Date {
-        didSet { UserDefaults.standard.set(nextAttempt, forKey: "accountNextAttempt") }
+        didSet {
+            UserDefaults.standard.set(nextAttempt, forKey: "accountNextAttempt")
+            schedulePresentationUpdate()
+        }
     }
 
     private let store: SharedUsageStore?
     private let monitor: StatusFileMonitor
     private let accountClient = ClaudeAccountClient()
     private var refreshTask: Task<Void, Never>?
+    private var presentationTask: Task<Void, Never>?
     private var terminalSnapshot: UsageSnapshot?
     private var failureCount = 0
 
@@ -42,11 +47,31 @@ final class MenuBarViewModel {
             if !self.accountEnabled { self.handle(newSnapshot) }
         }
         monitor.start()
+        schedulePresentationUpdate()
         if accountEnabled { scheduleRefresh(after: max(0, nextAttempt?.timeIntervalSinceNow ?? 0)) }
     }
 
     isolated deinit {
         refreshTask?.cancel()
+        presentationTask?.cancel()
+    }
+
+    /// Agenda somente eventos futuros. TimelineView no botão do MenuBarExtra
+    /// pode entrar em um ciclo de renderização quando a janela já venceu.
+    private func schedulePresentationUpdate() {
+        presentationTask?.cancel()
+        presentationDate = Date()
+        let next = [snapshot?.fiveHour?.resetsAt, snapshot?.sevenDay?.resetsAt, nextAttempt]
+            .compactMap { $0 }.filter { $0 > presentationDate }.min()
+        guard let next else { return }
+        let delay = next.timeIntervalSince(presentationDate)
+        presentationTask = Task { [weak self] in
+            do {
+                try await Task.sleep(for: .seconds(delay))
+                try Task.checkCancellation()
+                self?.schedulePresentationUpdate()
+            } catch { /* A nova leitura substitui a agenda anterior. */ }
+        }
     }
 
     func setAccountEnabled(_ enabled: Bool) {
@@ -106,13 +131,16 @@ final class MenuBarViewModel {
             }
             switch error as? ClaudeAccountError {
             case .credentialsUnavailable, .keychainDenied, .expiredCredentials, .missingScope, .unauthorized:
+                store?.setSyncIssue(.authenticationRequired)
                 // Permite repetir logo após corrigir o login; polling automático continua lento.
                 nextAttempt = Date().addingTimeInterval(30)
             default:
+                store?.setSyncIssue(.refreshFailed)
                 nextAttempt = Date().addingTimeInterval(retry)
             }
             delay = retry
             accountMessage = Self.message(for: error)
+            for kind in Self.widgetKinds { WidgetCenter.shared.reloadTimelines(ofKind: kind) }
             if let technicalError = error as? ClaudeAccountError {
                 Self.logger.error("Consulta dos limites falhou: \(String(describing: technicalError), privacy: .public)")
             }
@@ -147,8 +175,9 @@ final class MenuBarViewModel {
         do {
             try store.save(newSnapshot)
             snapshot = newSnapshot
+            schedulePresentationUpdate()
             storageError = nil
-            WidgetCenter.shared.reloadTimelines(ofKind: Self.widgetKind)
+            for kind in Self.widgetKinds { WidgetCenter.shared.reloadTimelines(ofKind: kind) }
         } catch {
             storageError = "Não foi possível salvar a atualização. A leitura anterior foi mantida."
             Self.logger.error("Falha ao salvar snapshot; leitura anterior preservada.")

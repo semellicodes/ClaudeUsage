@@ -4,6 +4,11 @@ public enum UsageSource: String, Codable, Sendable {
     case account
 }
 
+public enum UsageSyncIssue: String, Sendable {
+    case authenticationRequired
+    case refreshFailed
+}
+
 public struct UsageSnapshot: Equatable, Sendable, Codable {
     public static let currentSchemaVersion = 1
 
