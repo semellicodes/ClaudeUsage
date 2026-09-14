@@ -22,7 +22,7 @@ struct UsageColumnsRow: View {
             )
             .frame(height: columnHeight, alignment: .top)
             Rectangle()
-                .fill(Color.primary.opacity(0.08))
+                .fill(Color.primary.opacity(0.05))
                 .frame(width: 1, height: dividerHeight)
             UsageColumnView(
                 title: "SEMANAL · 7D", rateLimit: snapshot.sevenDay,
@@ -61,6 +61,7 @@ struct UsageColumnView: View {
             Text(title)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
+                .opacity(0.85)
                 .tracking(0.6)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity)
@@ -79,7 +80,8 @@ struct UsageColumnView: View {
                         size: gaugeTextSize,
                         weight: .bold,
                         design: .rounded
-                    )
+                    ),
+                    strokeRatio: 0.105
                 )
 
                 Group {
@@ -93,6 +95,7 @@ struct UsageColumnView: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
+                    .opacity(0.85)
                     .padding(.top, resetAdditionalSpacing)
                     .frame(maxWidth: .infinity)
                     .multilineTextAlignment(.center)

@@ -7,6 +7,7 @@ struct PercentageRing: View {
     let color: Color
     let valueText: String
     let valueFont: Font
+    var strokeRatio: CGFloat = 0.12
 
     private var normalizedPercentage: Double {
         min(
@@ -17,7 +18,7 @@ struct PercentageRing: View {
 
     private var lineWidth: CGFloat {
         max(
-            diameter * 0.12,
+            diameter * strokeRatio,
             2.5
         )
     }
