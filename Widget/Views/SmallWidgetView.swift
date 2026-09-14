@@ -116,7 +116,8 @@ struct SmallWidgetView: View {
                     size: metrics.gaugeTextSize,
                     weight: .bold,
                     design: .rounded
-                )
+                ),
+                strokeRatio: 0.105
             )
 
             Text("\(percentages.remaining)% restante")
@@ -124,6 +125,7 @@ struct SmallWidgetView: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
+                .opacity(0.85)
 
             Group {
                 if let reset = rateLimit.resetsAt {
@@ -136,6 +138,7 @@ struct SmallWidgetView: View {
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.72)
+                .opacity(0.85)
                 .padding(.top, metrics.resetAdditionalSpacing)
         }
         .frame(
@@ -223,7 +226,7 @@ private struct SmallWidgetMetrics {
             + footerHeight + verticalSpacing * 2 + headerBottomSpacing
         gaugeDiameter = max(54, min((size.width - padding * 2) * 0.65,
             size.height - reservedHeight, 112))
-        gaugeTextSize = gaugeDiameter * 0.30
+        gaugeTextSize = gaugeDiameter * 0.288
     }
 }
 
