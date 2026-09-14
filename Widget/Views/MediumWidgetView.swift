@@ -216,8 +216,8 @@ private struct MediumWidgetMetrics {
         let columnWidth = (size.width - horizontalPadding * 2 - columnSpacing * 2 - 1) / 2
         let reservedHeight = verticalPadding * 2 + headerHeight + headerBottomSpacing
             + captionHeight * 2 + labelGaugeSpacing * 2 + contextHeight
-        gaugeDiameter = max(32, min(columnWidth * 0.70, size.height - reservedHeight, 104) * 0.80)
-        gaugeTextSize = gaugeDiameter * 0.30
+        gaugeDiameter = max(32, min(columnWidth * 0.70, size.height - reservedHeight, 104) * 0.68)
+        gaugeTextSize = gaugeDiameter * 0.28
         dividerHeight = gaugeDiameter + captionHeight + labelGaugeSpacing
         columnHeight = gaugeDiameter + (captionHeight + labelGaugeSpacing) * 2 + resetAdditionalSpacing
 
