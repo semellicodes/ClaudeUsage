@@ -1,144 +1,171 @@
 # Claude Usage
 
-A native macOS app that shows your Claude / Claude Code usage in the menu bar and as WidgetKit widgets — 5-hour session limits, 7-day limits, and time until reset, without leaving the desktop.
+Acompanhe os limites da sua conta Claude na barra de menus e em widgets nativos do macOS. Veja quanto já usou, quanto resta e quando as janelas de **5 horas** e **7 dias** reiniciam, sem sair da mesa.
 
-## Features
+A sincronização consulta os limites da conta usada no Claude Desktop e no Claude Code. Não é necessário manter uma sessão de terminal em execução para atualizar esses limites; o aplicativo ClaudeUsage precisa permanecer aberto para buscar novas leituras.
 
-- **macOS menu bar app** built with `MenuBarExtra`, showing 5-hour and 7-day usage percentages, remaining percentage, and reset countdown.
-- **WidgetKit widgets** in Small and Medium sizes, addable to the desktop or Notification Center.
-- **5-hour session usage** and **7-day usage**, each shown independently — a missing window is displayed as "not available," never as 0%.
-- **Countdown until reset** for each rate-limit window.
-- **Per-model widget configuration** (Automatic / Sonnet / Opus) via a configurable widget (`WidgetSelectionIntent`), when the account reports per-model weekly limits.
-- **Context window usage** (input/output tokens, used percentage) shown separately from rate limits, sourced from the local `statusLine` collector.
-- **Shared data between the app and the widgets** through an App Group, so widgets render from the last known snapshot without requiring the app to be open.
-- **Automatic widget updates**: the app reloads widget timelines (`WidgetCenter.reloadTimelines`) whenever a new usage snapshot is saved.
-- Native SwiftUI throughout, no external dependencies.
+## Como fica no macOS
 
-## Screenshots
+Capturas reais da interface em português do Brasil, atualizadas em 14 de setembro de 2026.
 
-| Menu bar | Small widget | Medium widget |
-| --- | --- | --- |
-| ![Menu bar dropdown](docs/screenshots/menu-bar-2026-09-13.png) | ![Small widget](docs/screenshots/widget-small-2026-09-13.png) | ![Medium widget](docs/screenshots/widget-medium-2026-09-13.png) |
+### Barra de menus
 
-Current macOS interface in Brazilian Portuguese, showing account usage in the menu bar and both widget sizes.
+Uso e saldo das duas janelas, contagem até o reinício, horário da última leitura e controles de sincronização.
 
-## Requirements
+![Barra de menus com uso de 5 horas e 7 dias e botão Atualizar agora](docs/screenshots/menu-bar-2026-09-14-62d1e4aa.png)
 
-- macOS 26.5 or later
-- Xcode 26.6 or later (ships the Swift 6 toolchain)
+### Widgets na mesa
 
-`ClaudeUsageCore` declares `swift-tools-version: 6.0`. The `ClaudeUsage` and `ClaudeUsageWidgetExtension` app targets build with `SWIFT_VERSION = 5.0` (Swift 5 language mode) under that same toolchain — the project is not running the whole app in Swift 6 strict-concurrency language mode.
+| Small — um limite em destaque | Medium — sessão e semanal lado a lado |
+| --- | --- |
+| ![Widget Small com 34% usado e 66% restante](docs/screenshots/widget-small-2026-09-14-4f7738cb.png) | ![Widget Medium com 34% na sessão e 72% no semanal](docs/screenshots/widget-medium-2026-09-14-e9600af5.png) |
 
-## Installation / Build
+Os widgets usam círculos compactos, anéis finos, textos secundários discretos e fundo com material nativo, gradiente e borda suave. O macOS adapta a apresentação ao contexto, inclusive esmaecendo os widgets quando a mesa não está em foco.
 
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/semellicodes/ClaudeUsage.git
-   cd ClaudeUsage
-   ```
-2. Open `ClaudeUsage.xcodeproj` in Xcode.
-3. In **Signing & Capabilities**, select your own Apple Developer Team for both the `ClaudeUsage` and `ClaudeUsageWidgetExtension` targets.
-4. Update the **App Group** identifier on both targets (see below) so it is unique to your Team ID, and update the matching identifier in:
-   - `App/ClaudeUsageApp.swift`
-   - `Widget/UsageTimelineProvider.swift`
-5. Build and run the `ClaudeUsage` scheme (`Cmd+R`). The app runs as a menu bar utility (no Dock icon), installed at `~/Applications/ClaudeUsage.app`.
-6. Add a widget from the macOS widget gallery, searching for "Claude Usage."
+## Funcionalidades
 
-To get usage data flowing:
+- **Limites de 5 horas e 7 dias:** percentual usado e tempo até o reinício de cada janela. A janela de 5 horas não é um limite diário.
+- **Saldo restante:** exibido no Small e na barra de menus.
+- **Sincronização Desktop e terminal:** consulta automática a cada 5 minutos enquanto o app está aberto, com botão **Atualizar agora**. Em caso de falha ou restrição da API, o intervalo pode aumentar.
+- **Widgets Small e Medium:** disponíveis na mesa e na Central de Notificações, com contagens regressivas e horário da última leitura.
+- **Seleção de modelo:** Automático, Sonnet ou Opus na opção **Claude Usage · Modelos**. A escolha muda os dados exibidos; não troca o modelo usado no Claude.
+- **Escolha da janela no Small:** 5 horas ou 7 dias no widget configurável.
+- **Contexto opcional:** barra de uso da janela de contexto no Medium quando há dados do coletor local `statusLine` do Claude Code.
+- **Última leitura compartilhada:** os widgets exibem o snapshot salvo pelo app mesmo quando ele está fechado. Novos dados exigem que o app volte a funcionar.
+- **Estados explícitos:** dados ausentes ou janelas reiniciadas recebem mensagens próprias, sem inventar consumo de 0%.
 
-- **Account sync (recommended):** open the app's menu, enable "Sync Desktop and terminal." This reads the existing Claude Code OAuth login from the Keychain and queries `GET https://api.anthropic.com/api/oauth/usage` only — no API key, no message sending. Requires `claude auth login` to have been run at least once in Claude Code.
-- **Local statusLine (optional):** point Claude Code's `statusLine` at `Tools/claude-usage-statusline.sh` (absolute path) to also capture context-window usage from the terminal. See the "Fonte local opcional" section in the code comments and `Tools/diagnose-statusline.sh` for a read-only diagnostic.
+### Como interpretar a seleção de modelo
 
-Validate a build with:
+Na sincronização da conta, o limite de **5 horas é compartilhado**. Para o semanal, Sonnet e Opus usam o limite específico do modelo quando a fonte o fornece; caso contrário, usam o limite geral da conta.
+
+O uso da janela de **contexto** é outra medida: descreve o contexto de uma sessão local e não substitui os limites da assinatura. Ele depende do coletor do terminal e não representa automaticamente o contexto do Claude Desktop.
+
+## Primeira utilização
+
+Depois de compilar e abrir o aplicativo:
+
+1. Execute `claude auth login` no Terminal e entre na mesma conta usada no Claude Desktop.
+2. Abra o ClaudeUsage pela barra de menus e ative **Sincronizar Desktop e terminal**.
+3. Autorize a leitura do login no Chaves, se o macOS solicitar, e clique em **Atualizar agora**.
+4. Abra **Editar Widgets…** na mesa e procure **ClaudeUsage**.
+5. Adicione **Claude Usage** para a visualização padrão ou **Claude Usage · Modelos** para escolher modelo e janela do Small.
+
+O login do Claude Code fornece a credencial da conta. Depois de autenticar, você pode continuar usando o Claude Desktop normalmente; não precisa gerar mensagens no terminal para alimentar os limites do widget.
+
+Se o login expirar ou perder acesso à consulta de uso, o app informa o problema. Execute novamente `claude auth login` e atualize. Uma chave de API não substitui esse login para consultar os limites da assinatura.
+
+### Contexto do terminal (opcional)
+
+Configure o `statusLine` do Claude Code para executar [Tools/claude-usage-statusline.sh](Tools/claude-usage-statusline.sh), usando o caminho absoluto do script no seu computador. Esse coletor adiciona dados locais de contexto; ele não é necessário para a sincronização dos limites da conta.
+
+[Tools/diagnose-statusline.sh](Tools/diagnose-statusline.sh) ajuda a verificar a configuração local sem modificá-la.
+
+## Compilar e instalar
+
+### Requisitos
+
+- macOS 26.5 ou posterior.
+- Xcode 26.6 ou posterior para seguir a configuração de desenvolvimento do projeto.
+- Claude Code com login válido para sincronizar os limites da conta.
+- Assinatura e App Group configurados para sua equipe no Xcode.
+
+```sh
+git clone https://github.com/semellicodes/ClaudeUsage.git
+cd ClaudeUsage
+open ClaudeUsage.xcodeproj
+```
+
+1. Em **Signing & Capabilities**, selecione sua equipe nos targets `ClaudeUsage` e `ClaudeUsageWidgetExtension`.
+2. Configure um App Group válido para essa equipe nos dois targets. O identificador do repositório pertence à equipe original; substitua também o valor em `App/ClaudeUsageApp.swift` e `Widget/UsageTimelineProvider.swift` pelo mesmo identificador.
+3. Selecione o scheme **ClaudeUsage** e execute **⌘R**.
+4. O app será instalado em `~/Applications/ClaudeUsage.app`. Ele funciona na barra de menus, sem ícone no Dock.
+
+O app e a extensão são processos separados. O App Group permite que ambos acessem a mesma leitura salva; identificadores inconsistentes impedem esse compartilhamento.
+
+### Uma única instalação local
+
+As builds Debug e Release usam `DEPLOYMENT_LOCATION=YES`, `DSTROOT=$(HOME)` e `INSTALL_PATH=/Applications`. Assim, builds em diretórios DerivedData diferentes atualizam o mesmo `~/Applications/ClaudeUsage.app`.
+
+O scheme encerra o app e a extensão antes de compilar, evitando que código antigo do widget permaneça em execução. **⌘R** reabre o app; depois de **⌘B** ou **⌘U**, abra-o novamente para retomar a sincronização.
+
+O Clean do Xcode pode remover o app instalado, pois ele é o produto da build. Uma nova build o recria; os dados ficam no App Group separado. Cópias feitas manualmente não são removidas por esse mecanismo.
+
+Para CI ou uma build isolada, sobrescreva `DSTROOT` com um diretório temporário. Não execute esse produto como outra instalação diária. No Archive, o Xcode fornece seu próprio diretório de staging.
+
+## Verificação e diagnóstico
+
+Os testes do pacote Core estão integrados ao scheme **ClaudeUsage** por meio de `ClaudeUsage.xctestplan`. Execute **⌘U** no Xcode ou:
+
+```sh
+xcodebuild -project ClaudeUsage.xcodeproj -scheme ClaudeUsage -destination 'platform=macOS' test
+```
+
+Também é possível testar o pacote e compilar o app separadamente:
 
 ```sh
 swift test --package-path Packages/ClaudeUsageCore
 xcodebuild -project ClaudeUsage.xcodeproj -scheme ClaudeUsage -destination 'platform=macOS' build
 ```
 
-To run the Core tests from Xcode, select the **ClaudeUsage** scheme and press
-**Cmd+U**. Its shared `ClaudeUsage.xctestplan` runs the existing
-`ClaudeUsageCoreTests` package target and fixtures; no tests are duplicated.
-The equivalent command is:
+Para renderizar cenários locais dos widgets, sem consultar a conta:
 
 ```sh
-xcodebuild -project ClaudeUsage.xcodeproj -scheme ClaudeUsage -destination 'platform=macOS' test
+zsh Tools/check-widget-rendering.sh /tmp/claude-usage-preview.png
 ```
 
-`swift test --package-path Packages/ClaudeUsageCore` remains available for testing
-the package independently.
+Essa verificação não substitui a inspeção no WidgetKit real. [Tools/check-widget-archives.swift](Tools/check-widget-archives.swift) também verifica dimensões dos arquivos de timeline fornecidos como argumento.
 
-### One local installation
+| Sintoma | O que verificar |
+| --- | --- |
+| Leitura antiga | Confirme que o app está aberto, a sincronização está ativa e não há aviso de erro ou espera para nova tentativa. |
+| Login vencido | Execute `claude auth login` com a mesma conta do Desktop e atualize no menu. |
+| Limite não informado | A fonte pode não ter enviado essa janela; ausência não significa 0% de uso. |
+| Sem barra de contexto | Verifique o coletor `statusLine`; a consulta da conta não fornece o contexto da sessão local. |
+| App tem dados, widget não | Confira o App Group nos dois targets e os avisos de sincronização. |
+| Aparência esmaecida | O macOS pode apresentar widgets em modo monocromático conforme o foco e as preferências do sistema. |
 
-Debug and Release builds of the app use Xcode's native deployment settings
-(`DEPLOYMENT_LOCATION=YES`, `DSTROOT=$(HOME)`, `INSTALL_PATH=/Applications`).
-The product is built directly at `~/Applications/ClaudeUsage.app`; changing
-DerivedData directories does not create another installed app. The extension
-is embedded in that same bundle. Xcode supplies its own staging root for Archive.
-
-The main scheme stops both `ClaudeUsage` and `ClaudeUsageWidgetExtension` before
-building. The widget runs in a separate process; stopping only the app can leave
-the previous widget code in memory even after its bundle has been updated.
-`Cmd+R` builds and launches that same installation; `Cmd+B` and `Cmd+U` leave
-the app stopped, so reopen `~/Applications/ClaudeUsage.app` when finished.
-Because the installed app is the build product, Xcode Clean can remove it;
-building again recreates it. Account data remains in its separate App Group.
-
-For CI or isolated builds, override `DSTROOT` with a temporary directory.
-Do not run that temporary app as a second daily installation. This setup does
-not remove manually copied apps or prevent explicit build-setting overrides.
-
-To confirm which extension is registered:
+Para conferir a extensão registrada com o identificador original do projeto:
 
 ```sh
 pluginkit -m -A -D -v -i com.paula.ClaudeUsage.ClaudeUsageWidget
 ```
 
-## App Group
+## Organização do projeto
 
-The app and the Widget Extension are separate processes/sandboxes. Sharing a `UsageSnapshot` between them requires an [App Group](https://developer.apple.com/documentation/xcode/configuring-app-groups):
-
-```text
-App (menu bar)
-  -> writes UsageSnapshot to SharedUsageStore (UserDefaults(suiteName:))
-    -> App Group container
-      -> Widget Extension reads the same snapshot in its TimelineProvider
-```
-
-This repository's App Group identifier is tied to the original developer's Team ID. When building your own copy, use your own identifier, for example:
-
-```text
-group.your.bundle.identifier
-```
-
-and make sure the entitlements of both targets and the identifier hardcoded in `ClaudeUsageApp.swift` / `UsageTimelineProvider.swift` all match.
-
-## Architecture
-
-The project follows a pragmatic Clean Architecture split, shared between the app and the widget:
-
-- **Domain** (`Packages/ClaudeUsageCore/.../Domain`) — `RateLimit`, `ContextUsage`, `UsageSnapshot`. No SwiftUI, WidgetKit, or I/O knowledge.
-- **Data / Mapper** (`.../Data`) — DTOs for the account API and the local `statusLine` JSON, and `ClaudeStatusMapper` / `ClaudeAccountPayload`, the only boundary that turns raw, untrusted JSON into validated Domain models (finite numbers, clamped percentages, no invented data).
-- **Persistence** (`.../Persistence`) — `SharedUsageStore` (App Group–backed) and `ClaudeOAuthCredentials` (Keychain read for the existing Claude Code login).
-- **App** (`App/`) — `MenuBarExtra` scene, `MenuBarViewModel`, and `StatusFileMonitor` (watches the local status file).
-- **Widget Extension** (`Widget/`) — `TimelineProvider`, `WidgetSelectionIntent`, and the SwiftUI views for the Small/Medium widgets.
-
-`ClaudeUsageCore` is the single source of truth for models and validation; both targets depend on it instead of duplicating logic.
+| Diretório | Responsabilidade |
+| --- | --- |
+| `App/` | App da barra de menus, sincronização e monitoramento do arquivo local. |
+| `Widget/` | Configuração dos widgets, timeline e views SwiftUI. |
+| `Packages/ClaudeUsageCore/` | Modelos, validação, consulta da conta, persistência e testes compartilhados. |
+| `Tools/` | Coletor local e ferramentas de diagnóstico/renderização. |
 
 ```mermaid
 flowchart LR
-    A["Claude account API<br/>or local statusLine"] --> B["Mapper"]
-    B --> C["Domain models"]
-    C --> D["SharedUsageStore<br/>App Group"]
-    D --> E["macOS menu bar app"]
-    D --> F["Widget TimelineProvider"]
-    F --> G["Widget views"]
+    A[Consulta da conta ou statusLine local] --> B[Validação e mapeamento]
+    B --> C[Snapshot no App Group]
+    C --> D[Barra de menus]
+    C --> E[Timeline do WidgetKit]
+    E --> F[Small e Medium]
 ```
 
-## Privacy
+O pacote Core usa `swift-tools-version: 6.0`. Os targets do app e da extensão usam `SWIFT_VERSION = 5.0` com o toolchain do Xcode. A interface é nativa em SwiftUI, sem bibliotecas externas de UI.
 
-No API keys, telemetry, or analytics. The OAuth token is read from the Keychain at request time and never persisted by this app or shared with the widget. Only a sanitized `UsageSnapshot` (percentages, reset dates) crosses the App Group — never raw payload fields like `cwd` or `transcript_path`.
+## Privacidade
 
-## License
+A sincronização lê o login OAuth existente no Chaves e envia a credencial somente para `https://api.anthropic.com/api/oauth/usage`, para consultar os limites. O app não envia mensagens ao Claude nem exige uma chave de API.
+
+A credencial não é compartilhada com os widgets. O App Group recebe apenas o snapshot tratado para exibição, sem o payload bruto, caminhos de trabalho ou transcrições. O projeto não inclui telemetria ou analytics.
+
+## Padrão de commits
+
+Use o formato `tipo(escopo): descrição concisa`. O tipo é obrigatório; o escopo é opcional.
+
+```text
+feat(widget): adiciona seleção de janela no Small
+fix(auth): trata login expirado
+docs(readme): atualiza funcionalidades e capturas
+```
+
+## Licença
 
 [MIT](LICENSE)
