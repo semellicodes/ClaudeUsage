@@ -224,9 +224,9 @@ private struct SmallWidgetMetrics {
         let footerHeight: CGFloat = 12
         let reservedHeight = padding * 2 + headerHeight + captionHeight * 2
             + footerHeight + verticalSpacing * 2 + headerBottomSpacing
-        gaugeDiameter = max(54, min((size.width - padding * 2) * 0.65,
-            size.height - reservedHeight, 112))
-        gaugeTextSize = gaugeDiameter * 0.288
+        gaugeDiameter = max(32, min((size.width - padding * 2) * 0.65,
+            size.height - reservedHeight, 112) * 0.74)
+        gaugeTextSize = gaugeDiameter * 0.215
     }
 }
 
