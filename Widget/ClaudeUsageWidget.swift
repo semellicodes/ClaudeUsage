@@ -24,7 +24,7 @@ struct ClaudeUsageWidget: Widget {
             .systemMedium
         ])
         .contentMarginsDisabled()
-        .containerBackgroundRemovable(false)
+        .containerBackgroundRemovable(true)
     }
 }
 
@@ -40,7 +40,7 @@ struct LegacyClaudeUsageWidget: Widget {
         .description("Uso da conta Claude: limites de 5h e 7d, no Desktop e no terminal.")
         .supportedFamilies([.systemSmall, .systemMedium])
         .contentMarginsDisabled()
-        .containerBackgroundRemovable(false)
+        .containerBackgroundRemovable(true)
     }
 }
 

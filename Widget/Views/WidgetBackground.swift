@@ -6,7 +6,7 @@ struct WidgetBackground: View {
 
     var body: some View {
         ContainerRelativeShape()
-            .fill(.ultraThinMaterial)
+            .fill(.regularMaterial)
             .overlay {
                 ContainerRelativeShape()
                     .fill(
@@ -17,7 +17,7 @@ struct WidgetBackground: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
-                        .opacity(0.80)
+                        .opacity(0.45)
                         .shadow(.inner(color: .black.opacity(0.10), radius: 3, y: -2))
                     )
             }
@@ -25,7 +25,7 @@ struct WidgetBackground: View {
                 ContainerRelativeShape()
                     .strokeBorder(
                         LinearGradient(
-                            colors: [.white.opacity(0.28), .primary.opacity(0.05)],
+                            colors: [.white.opacity(0.35), .primary.opacity(0.05)],
                             startPoint: .top,
                             endPoint: .bottom
                         ),
