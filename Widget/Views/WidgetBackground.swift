@@ -12,7 +12,7 @@ struct WidgetBackground: View {
                     .fill(
                         LinearGradient(
                             colors: colorScheme == .dark
-                                ? [Color(white: 0.20), Color(white: 0.10)]
+                                ? [Color(white: 0.25), Color(white: 0.10)]
                                 : [Color(white: 0.99), Color(white: 0.90)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -25,12 +25,13 @@ struct WidgetBackground: View {
                 ContainerRelativeShape()
                     .strokeBorder(
                         LinearGradient(
-                            colors: [.white.opacity(0.18), .primary.opacity(0.05)],
+                            colors: [.white.opacity(0.28), .primary.opacity(0.05)],
                             startPoint: .top,
                             endPoint: .bottom
                         ),
                         lineWidth: 0.75
                     )
             }
+            .opacity(0.80)
     }
 }
