@@ -22,7 +22,7 @@ struct UsageColumnsRow: View {
             )
             .frame(height: columnHeight, alignment: .top)
             Rectangle()
-                .fill(Color.primary.opacity(0.12))
+                .fill(Color.primary.opacity(0.08))
                 .frame(width: 1, height: dividerHeight)
             UsageColumnView(
                 title: "SEMANAL · 7D", rateLimit: snapshot.sevenDay,
@@ -59,7 +59,7 @@ struct UsageColumnView: View {
         ) {
 
             Text(title)
-                .font(.caption.weight(.bold))
+                .font(.caption.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .tracking(0.6)
                 .lineLimit(1)
